@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../voice/speech_service.dart';
 import '../../exercises/screens/exercise_library_screen.dart';
 import '../../history/bloc/history_bloc.dart';
 import '../../history/bloc/history_event.dart';
@@ -11,9 +10,7 @@ import '../../workout/widgets/voice_mic_button.dart';
 
 /// Main scaffold hosting bottom navigation between Workout, Exercises, and History.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({required this.speechService, super.key});
-
-  final SpeechService speechService;
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -54,9 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (BuildContext context, int currentIndex, _) {
         return Scaffold(
           body: IndexedStack(index: currentIndex, children: _pages),
-          floatingActionButton: VoiceMicButton(
-            speechService: widget.speechService,
-          ),
+          floatingActionButton: const VoiceMicButton(),
           bottomNavigationBar: NavigationBar(
             selectedIndex: currentIndex,
             onDestinationSelected: (int idx) => _onTabChanged(context, idx),

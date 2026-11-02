@@ -91,6 +91,51 @@ void main() {
       }
     });
 
+    test('parses spoken number words (three sets ten reps eighty kg)', () {
+      final VoiceCommand result = CommandParser.parse(
+        'log bench press three sets ten reps eighty kg',
+      );
+      expect(result, isA<LogSetCommand>());
+      if (result is LogSetCommand) {
+        expect(result.exerciseName, 'barbell bench press');
+        expect(result.sets, 3);
+        expect(result.reps, 10);
+        expect(result.weight, 80.0);
+      }
+    });
+
+    test('parses weight-first phrasing (bench 80 kg for 10 reps)', () {
+      final VoiceCommand result = CommandParser.parse(
+        'bench 80 kg for 10 reps',
+      );
+      expect(result, isA<LogSetCommand>());
+      if (result is LogSetCommand) {
+        expect(result.exerciseName, 'barbell bench press');
+        expect(result.sets, 1);
+        expect(result.reps, 10);
+        expect(result.weight, 80.0);
+        expect(result.unit, 'kg');
+      }
+    });
+
+    test('parses weight-first phrasing with x (squat 100 x 5 reps)', () {
+      final VoiceCommand result = CommandParser.parse('squat 100 x 5 reps');
+      expect(result, isA<LogSetCommand>());
+      if (result is LogSetCommand) {
+        expect(result.exerciseName, 'barbell back squat');
+        expect(result.reps, 5);
+        expect(result.weight, 100.0);
+      }
+    });
+
+    test('parses rest timer with spoken words (rest ninety seconds)', () {
+      final VoiceCommand result = CommandParser.parse('rest ninety seconds');
+      expect(result, isA<RestTimerCommand>());
+      if (result is RestTimerCommand) {
+        expect(result.seconds, 90);
+      }
+    });
+
     test('returns UnknownCommand for gibberish', () {
       final VoiceCommand result = CommandParser.parse('tell me a gym joke');
       expect(result, isA<UnknownCommand>());

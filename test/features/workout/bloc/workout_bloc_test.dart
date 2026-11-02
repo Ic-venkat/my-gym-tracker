@@ -4,7 +4,6 @@ import 'package:gym_tracker/core/utils/result.dart';
 import 'package:gym_tracker/data/models/models.dart';
 import 'package:gym_tracker/data/repositories/exercise_repository.dart';
 import 'package:gym_tracker/data/repositories/workout_repository.dart';
-import 'package:gym_tracker/features/workout/bloc/rest_timer_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_bloc.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_event.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_state.dart';
@@ -17,13 +16,10 @@ class MockExerciseRepository extends Mock implements ExerciseRepository {}
 
 class MockTtsService extends Mock implements TtsService {}
 
-class MockRestTimerCubit extends Mock implements RestTimerCubit {}
-
 void main() {
   late MockWorkoutRepository mockWorkoutRepo;
   late MockExerciseRepository mockExerciseRepo;
   late MockTtsService mockTts;
-  late MockRestTimerCubit mockRestTimer;
 
   final Workout sampleWorkout = Workout(
     id: 'w_1',
@@ -58,11 +54,8 @@ void main() {
     mockWorkoutRepo = MockWorkoutRepository();
     mockExerciseRepo = MockExerciseRepository();
     mockTts = MockTtsService();
-    mockRestTimer = MockRestTimerCubit();
 
     when(() => mockTts.speak(any())).thenAnswer((_) async {});
-    when(() => mockRestTimer.startTimer(any())).thenReturn(null);
-    when(() => mockRestTimer.skipTimer()).thenReturn(null);
   });
 
   group('WorkoutBloc', () {
@@ -75,7 +68,6 @@ void main() {
           workoutRepository: mockWorkoutRepo,
           exerciseRepository: mockExerciseRepo,
           ttsService: mockTts,
-          restTimerCubit: mockRestTimer,
         );
       },
       act: (WorkoutBloc bloc) => bloc.add(const CheckActiveWorkout()),
@@ -98,7 +90,6 @@ void main() {
           workoutRepository: mockWorkoutRepo,
           exerciseRepository: mockExerciseRepo,
           ttsService: mockTts,
-          restTimerCubit: mockRestTimer,
         );
       },
       act: (WorkoutBloc bloc) =>
@@ -122,7 +113,6 @@ void main() {
           workoutRepository: mockWorkoutRepo,
           exerciseRepository: mockExerciseRepo,
           ttsService: mockTts,
-          restTimerCubit: mockRestTimer,
         );
       },
       act: (WorkoutBloc bloc) =>
@@ -138,7 +128,7 @@ void main() {
     );
 
     blocTest<WorkoutBloc, WorkoutState>(
-      'logs set and triggers rest timer',
+      'logs set successfully into active workout',
       build: () {
         when(
           () => mockWorkoutRepo.logSet(
@@ -153,7 +143,6 @@ void main() {
           workoutRepository: mockWorkoutRepo,
           exerciseRepository: mockExerciseRepo,
           ttsService: mockTts,
-          restTimerCubit: mockRestTimer,
         );
       },
       seed: () => ActiveWorkoutState(
@@ -171,9 +160,6 @@ void main() {
           1,
         ),
       ],
-      verify: (_) {
-        verify(() => mockRestTimer.startTimer(90)).called(1);
-      },
     );
 
     blocTest<WorkoutBloc, WorkoutState>(
@@ -185,7 +171,6 @@ void main() {
           workoutRepository: mockWorkoutRepo,
           exerciseRepository: mockExerciseRepo,
           ttsService: mockTts,
-          restTimerCubit: mockRestTimer,
         );
       },
       seed: () => ActiveWorkoutState(
@@ -216,7 +201,6 @@ void main() {
           workoutRepository: mockWorkoutRepo,
           exerciseRepository: mockExerciseRepo,
           ttsService: mockTts,
-          restTimerCubit: mockRestTimer,
         );
       },
       seed: () => ActiveWorkoutState(
@@ -229,9 +213,6 @@ void main() {
         isA<WorkoutLoading>(),
         isA<WorkoutCompletedState>(),
       ],
-      verify: (_) {
-        verify(() => mockRestTimer.skipTimer()).called(1);
-      },
     );
   });
 }

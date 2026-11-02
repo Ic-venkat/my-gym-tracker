@@ -5,7 +5,6 @@ import '../../../data/models/models.dart';
 import '../../../data/repositories/exercise_repository.dart';
 import '../../../data/repositories/workout_repository.dart';
 import '../../../voice/tts_service.dart';
-import 'rest_timer_cubit.dart';
 import 'workout_event.dart';
 import 'workout_state.dart';
 import 'workout_voice_handler.dart';
@@ -16,16 +15,13 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     required WorkoutRepository workoutRepository,
     required ExerciseRepository exerciseRepository,
     required TtsService ttsService,
-    RestTimerCubit? restTimerCubit,
   }) : _workoutRepo = workoutRepository,
        _exerciseRepo = exerciseRepository,
        _tts = ttsService,
-       _restTimer = restTimerCubit,
        _voiceHandler = WorkoutVoiceHandler(
          exerciseRepository: exerciseRepository,
          workoutRepository: workoutRepository,
          ttsService: ttsService,
-         restTimerCubit: restTimerCubit,
        ),
        super(const WorkoutInitial()) {
     on<CheckActiveWorkout>(_onCheckActiveWorkout);
@@ -39,7 +35,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
   final WorkoutRepository _workoutRepo;
   final ExerciseRepository _exerciseRepo;
   final TtsService _tts;
-  final RestTimerCubit? _restTimer;
   final WorkoutVoiceHandler _voiceHandler;
 
   Future<void> _onCheckActiveWorkout(
@@ -79,7 +74,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     }
     final ActiveWorkoutState current = state as ActiveWorkoutState;
     emit(const WorkoutLoading());
-    _restTimer?.skipTimer();
 
     final Result<Workout> result = await _workoutRepo.finishWorkout(
       workoutId: current.workout.id,
@@ -115,7 +109,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         result.data,
       ];
       emit(current.copyWith(sets: updatedSets));
-      _restTimer?.startTimer(event.restSeconds);
     } else if (result is Failure<WorkoutSet>) {
       emit(WorkoutError(result.message));
     }

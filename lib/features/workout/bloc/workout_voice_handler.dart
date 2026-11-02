@@ -5,7 +5,6 @@ import '../../../data/repositories/workout_repository.dart';
 import '../../../voice/command_parser.dart';
 import '../../../voice/tts_service.dart';
 import '../../../voice/voice_command.dart';
-import 'rest_timer_cubit.dart';
 import 'workout_event.dart';
 import 'workout_state.dart';
 
@@ -15,16 +14,13 @@ class WorkoutVoiceHandler {
     required ExerciseRepository exerciseRepository,
     required WorkoutRepository workoutRepository,
     required TtsService ttsService,
-    RestTimerCubit? restTimerCubit,
   }) : _exerciseRepo = exerciseRepository,
        _workoutRepo = workoutRepository,
-       _tts = ttsService,
-       _restTimer = restTimerCubit;
+       _tts = ttsService;
 
   final ExerciseRepository _exerciseRepo;
   final WorkoutRepository _workoutRepo;
   final TtsService _tts;
-  final RestTimerCubit? _restTimer;
 
   /// Processes transcribed voice text and triggers appropriate workout actions.
   Future<void> handleVoiceCommand({
@@ -44,7 +40,15 @@ class WorkoutVoiceHandler {
         addEvent(const FinishWorkoutEvent());
 
       case RestTimerCommand(seconds: final int sec):
-        _restTimer?.startTimer(sec);
+        if (currentState is ActiveWorkoutState) {
+          emitState(
+            currentState.copyWith(
+              requestedRestSeconds: sec,
+              lastVoiceFeedback: 'Rest timer set for $sec seconds',
+              lastRecognizedText: rawText,
+            ),
+          );
+        }
         await _tts.speak('Rest timer set for $sec seconds');
 
       case LogSetCommand(

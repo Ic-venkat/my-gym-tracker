@@ -15,3 +15,4 @@ Initially, the rest timer ticker and remaining seconds were managed inside `Work
 - **Pros:** Reduces `WorkoutBloc` to under 180 lines; allows independent UI rebuilds of the rest timer banner without triggering full workout tree reconciliations; simplifies testing.
 - **Cons:** Introduces a second BLoC provider at root for rest timer.
 - **Trade-off accepted:** Significantly higher modularity, clean testability, and strict adherence to file size rules.
+

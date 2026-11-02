@@ -81,7 +81,8 @@ class AppDatabase extends _$AppDatabase {
 
   /// Search exercises by name keyword.
   Future<List<Exercise>> searchExercises(String query) {
-    final String clean = query.trim().toLowerCase();
+    final String clean =
+        query.trim().toLowerCase().replaceAll(RegExp(r'[%_]'), '');
     return (select(exercises)
           ..where(($ExercisesTable t) => t.name.lower().like('%$clean%'))
           ..orderBy(<OrderingTerm Function($ExercisesTable)>[
@@ -92,16 +93,17 @@ class AppDatabase extends _$AppDatabase {
 
   /// Find exercise by exact or fuzzy name match using direct SQL.
   Future<Exercise?> findExerciseByName(String name) async {
-    final String clean = name.trim().toLowerCase();
+    final String trimmed = name.trim().toLowerCase();
     final Exercise? exact =
         await (select(exercises)
-              ..where(($ExercisesTable t) => t.name.lower().equals(clean))
+              ..where(($ExercisesTable t) => t.name.lower().equals(trimmed))
               ..limit(1))
             .getSingleOrNull();
     if (exact != null) {
       return exact;
     }
 
+    final String clean = trimmed.replaceAll(RegExp(r'[%_]'), '');
     return (select(exercises)
           ..where(($ExercisesTable t) => t.name.lower().like('%$clean%'))
           ..limit(1))
@@ -136,6 +138,17 @@ class AppDatabase extends _$AppDatabase {
           ])
           ..limit(1))
         .getSingleOrNull();
+  }
+
+  /// Watch active (uncompleted) workout stream.
+  Stream<Workout?> watchActiveWorkout() {
+    return (select(workouts)
+          ..where(($WorkoutsTable t) => t.completedAt.isNull())
+          ..orderBy(<OrderingTerm Function($WorkoutsTable)>[
+            ($WorkoutsTable t) => OrderingTerm.desc(t.startedAt),
+          ])
+          ..limit(1))
+        .watchSingleOrNull();
   }
 
   /// Get all completed workouts ordered by date.

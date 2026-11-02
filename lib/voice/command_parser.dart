@@ -1,3 +1,4 @@
+import 'exercise_aliases.dart' as aliases;
 import 'voice_command.dart';
 
 /// Pure NLP parser for converting natural speech strings into [VoiceCommand]s.
@@ -17,6 +18,7 @@ class CommandParser {
       RegExp(r'(\d+),(\d+)'),
       (Match m) => '${m.group(1)}.${m.group(2)}',
     );
+    clean = _convertNumberWords(clean);
     clean = clean.replaceAll(RegExp(r'\s+'), ' ');
 
     // 2. Session control: Start Workout
@@ -51,23 +53,8 @@ class CommandParser {
   }
 
   /// Maps common lifter aliases and abbreviations to canonical names.
-  static String normalizeExerciseName(String raw) {
-    final String trimmed = raw.trim().toLowerCase();
-    return switch (trimmed) {
-      'bench' || 'flat bench' => 'barbell bench press',
-      'incline bench' => 'incline barbell bench press',
-      'incline db' || 'incline db press' => 'incline dumbbell press',
-      'squat' || 'squats' => 'barbell back squat',
-      'deadlift' || 'deadlifts' => 'barbell deadlift',
-      'ohp' || 'military press' => 'overhead press',
-      'rdl' => 'romanian deadlift',
-      'pullups' || 'pull ups' => 'pull-ups',
-      'chinups' || 'chin ups' => 'chin-ups',
-      'pushups' || 'push ups' => 'push-ups',
-      'curls' || 'bicep curls' => 'barbell bicep curl',
-      _ => trimmed,
-    };
-  }
+  static String normalizeExerciseName(String raw) =>
+      aliases.normalizeExerciseName(raw);
 
   static bool _isStartWorkout(String clean) {
     return clean.startsWith('start workout') ||
@@ -176,7 +163,21 @@ class CommandParser {
       );
     }
 
-    // Pattern 3: "bench press 10 at 80" or "bench press 10 by 80"
+    // Pattern 3: Weight-first (e.g. "bench 80 kg for 10 reps", "squat 100 x 5 reps")
+    final RegExp regexWeightFirst = RegExp(
+      r'^(?:log\s+)?(.+?)\s+(\d+(?:\.\d+)?)\s*(kg|lbs)?\s*(?:for|x)\s*(\d+)\s*reps?$',
+    );
+    final RegExpMatch? matchWf = regexWeightFirst.firstMatch(text);
+    if (matchWf != null) {
+      return LogSetCommand(
+        exerciseName: normalizeExerciseName(matchWf.group(1)!),
+        reps: int.parse(matchWf.group(4)!),
+        weight: double.parse(matchWf.group(2)!),
+        unit: matchWf.group(3) ?? 'kg',
+      );
+    }
+
+    // Pattern 4: "bench press 10 at 80" or "bench press 10 by 80"
     final RegExp regexShort = RegExp(
       r'^(?:log\s+)?(.+?)\s+(\d+)\s*(?:at|by|x)\s*(\d+(?:\.\d+)?)\s*(kg|lbs)?$',
     );
@@ -190,7 +191,7 @@ class CommandParser {
       );
     }
 
-    // Pattern 4: Bodyweight (e.g. "log pull-ups 10 reps", "pushups 15 reps")
+    // Pattern 5: Bodyweight (e.g. "log pull-ups 10 reps", "pushups 15 reps")
     final RegExp regexBodyweight = RegExp(
       r'^(?:log\s+)?(.+?)\s+(\d+)\s*reps?$',
     );
@@ -204,5 +205,44 @@ class CommandParser {
     }
 
     return null;
+  }
+
+  static const Map<String, String> _numberWords = <String, String>{
+    'zero': '0',
+    'one': '1',
+    'two': '2',
+    'three': '3',
+    'four': '4',
+    'five': '5',
+    'six': '6',
+    'seven': '7',
+    'eight': '8',
+    'nine': '9',
+    'ten': '10',
+    'eleven': '11',
+    'twelve': '12',
+    'thirteen': '13',
+    'fourteen': '14',
+    'fifteen': '15',
+    'sixteen': '16',
+    'seventeen': '17',
+    'eighteen': '18',
+    'nineteen': '19',
+    'twenty': '20',
+    'thirty': '30',
+    'forty': '40',
+    'fifty': '50',
+    'sixty': '60',
+    'seventy': '70',
+    'eighty': '80',
+    'ninety': '90',
+    'hundred': '100',
+  };
+
+  static String _convertNumberWords(String text) {
+    return text
+        .split(' ')
+        .map((String word) => _numberWords[word] ?? word)
+        .join(' ');
   }
 }

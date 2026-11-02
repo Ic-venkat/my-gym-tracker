@@ -13,6 +13,7 @@ import 'features/home/screens/home_screen.dart';
 import 'features/workout/bloc/rest_timer_cubit.dart';
 import 'features/workout/bloc/workout_bloc.dart';
 import 'features/workout/bloc/workout_event.dart';
+import 'voice/bloc/voice_cubit.dart';
 import 'voice/speech_service.dart';
 import 'voice/tts_service.dart';
 
@@ -59,6 +60,9 @@ class GymTrackerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<VoiceCubit>(
+          create: (_) => VoiceCubit(speechService: speechService),
+        ),
         BlocProvider<RestTimerCubit>(
           create: (_) => RestTimerCubit(ttsService: ttsService),
         ),
@@ -72,7 +76,6 @@ class GymTrackerApp extends StatelessWidget {
             workoutRepository: workoutRepository,
             exerciseRepository: exerciseRepository,
             ttsService: ttsService,
-            restTimerCubit: c.read<RestTimerCubit>(),
           )..add(const CheckActiveWorkout()),
         ),
         BlocProvider<HistoryBloc>(
@@ -85,7 +88,7 @@ class GymTrackerApp extends StatelessWidget {
         title: 'GymTracker',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
-        home: HomeScreen(speechService: speechService),
+        home: const HomeScreen(),
       ),
     );
   }

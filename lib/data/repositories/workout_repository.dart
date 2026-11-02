@@ -24,6 +24,11 @@ class WorkoutRepository {
     }
   }
 
+  /// Watches active workout as a reactive stream.
+  Stream<Workout?> watchActiveWorkout() {
+    return _db.watchActiveWorkout();
+  }
+
   /// Starts a new active workout session.
   Future<Result<Workout>> startWorkout({String title = 'Workout'}) async {
     try {

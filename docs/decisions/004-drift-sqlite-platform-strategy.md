@@ -15,3 +15,4 @@ GymTracker uses Drift as its type-safe SQLite database layer. Drift supports nat
 - **Pros:** Native mobile builds enjoy maximum SQLite read/write performance, WAL concurrency, and immediate offline persistence.
 - **Cons:** Web builds without Wasm worker initialization will fall back to in-memory or unsupported connection until WebAssembly workers are configured.
 - **Trade-off accepted:** Mobile is the primary fitness tracker platform where offline performance is critical.
+

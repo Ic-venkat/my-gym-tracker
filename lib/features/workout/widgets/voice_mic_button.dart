@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../voice/speech_service.dart';
+import '../../../voice/bloc/voice_cubit.dart';
+import '../../../voice/bloc/voice_state.dart';
 import '../bloc/workout_bloc.dart';
 import '../bloc/workout_event.dart';
 
-/// Floating mic button that reacts to speech listening state.
+/// Floating mic button that activates voice recognition via [VoiceCubit].
 class VoiceMicButton extends StatelessWidget {
-  const VoiceMicButton({required this.speechService, super.key});
+  const VoiceMicButton({super.key});
 
-  final SpeechService speechService;
-
-  Future<void> _toggleListening(BuildContext context) async {
-    if (speechService.isListening) {
-      await speechService.stopListening();
+  void _toggleListening(BuildContext context, bool isListening) {
+    final VoiceCubit voiceCubit = context.read<VoiceCubit>();
+    if (isListening) {
+      voiceCubit.stopListening();
     } else {
-      await speechService.startListening(
+      voiceCubit.startListening(
         onResult: (String text) {
           context.read<WorkoutBloc>().add(VoiceCommandReceived(text));
         },
@@ -25,14 +25,12 @@ class VoiceMicButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<bool>(
-      stream: speechService.isListeningStream,
-      initialData: speechService.isListening,
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        final bool isListening = snapshot.data ?? false;
+    return BlocBuilder<VoiceCubit, VoiceState>(
+      builder: (BuildContext context, VoiceState state) {
+        final bool isListening = state is VoiceListening;
         return FloatingActionButton.extended(
           heroTag: 'voice_mic_fab',
-          onPressed: () => _toggleListening(context),
+          onPressed: () => _toggleListening(context, isListening),
           backgroundColor: isListening
               ? const Color(0xFFEF4444)
               : const Color(0xFF10B981),
