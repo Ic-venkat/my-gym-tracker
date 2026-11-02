@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>GymTracker requires microphone access to enable voice logging for exercises and workouts hands-free.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>GymTracker uses speech recognition to parse voice commands and log your gym sets.</string>
 </dict>
 </plist>
