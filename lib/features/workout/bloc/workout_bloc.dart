@@ -1,17 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/result.dart';
 import '../../../data/models/models.dart';
 import '../../../data/repositories/exercise_repository.dart';
 import '../../../data/repositories/workout_repository.dart';
-import '../../../voice/command_parser.dart';
 import '../../../voice/tts_service.dart';
-import '../../../voice/voice_command.dart';
 import 'rest_timer_cubit.dart';
 import 'workout_event.dart';
 import 'workout_state.dart';
+import 'workout_voice_handler.dart';
 
 /// BLoC managing workout sessions, set logging, and voice control.
 class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
@@ -24,6 +21,12 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
        _exerciseRepo = exerciseRepository,
        _tts = ttsService,
        _restTimer = restTimerCubit,
+       _voiceHandler = WorkoutVoiceHandler(
+         exerciseRepository: exerciseRepository,
+         workoutRepository: workoutRepository,
+         ttsService: ttsService,
+         restTimerCubit: restTimerCubit,
+       ),
        super(const WorkoutInitial()) {
     on<CheckActiveWorkout>(_onCheckActiveWorkout);
     on<StartWorkoutEvent>(_onStartWorkout);
@@ -37,6 +40,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
   final ExerciseRepository _exerciseRepo;
   final TtsService _tts;
   final RestTimerCubit? _restTimer;
+  final WorkoutVoiceHandler _voiceHandler;
 
   Future<void> _onCheckActiveWorkout(
     CheckActiveWorkout event,
@@ -142,124 +146,12 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     VoiceCommandReceived event,
     Emitter<WorkoutState> emit,
   ) async {
-    final VoiceCommand command = CommandParser.parse(event.rawText);
-
-    switch (command) {
-      case StartWorkoutCommand(title: final String title):
-        add(StartWorkoutEvent(title: title));
-        await _tts.speak('Starting $title');
-
-      case EndWorkoutCommand():
-        add(const FinishWorkoutEvent());
-
-      case RestTimerCommand(seconds: final int sec):
-        _restTimer?.startTimer(sec);
-        await _tts.speak('Rest timer set for $sec seconds');
-
-      case LogSetCommand(
-        exerciseName: final String name,
-        sets: final int sets,
-        reps: final int reps,
-        weight: final double weight,
-      ):
-        await _handleVoiceLogSet(name, sets, reps, weight, emit, event.rawText);
-
-      case AddExerciseCommand(exerciseName: final String name):
-        await _handleVoiceAddExercise(name, emit, event.rawText);
-
-      case UnknownCommand(rawInput: final String raw):
-        if (state is ActiveWorkoutState) {
-          emit(
-            (state as ActiveWorkoutState).copyWith(
-              lastRecognizedText: raw,
-              lastVoiceFeedback: 'Could not understand command',
-            ),
-          );
-        }
-        await _tts.speak('Sorry, could not understand: $raw');
-    }
-  }
-
-  Future<void> _handleVoiceLogSet(
-    String name,
-    int sets,
-    int reps,
-    double weight,
-    Emitter<WorkoutState> emit,
-    String rawText,
-  ) async {
-    final Result<Exercise?> exResult = await _exerciseRepo.findExerciseByName(
-      name,
+    await _voiceHandler.handleVoiceCommand(
+      rawText: event.rawText,
+      currentState: state,
+      addEvent: add,
+      emitState: (WorkoutState s) => emit(s),
     );
-    final Exercise? exercise = exResult.dataOrNull;
-
-    if (exercise == null) {
-      if (state is ActiveWorkoutState) {
-        emit(
-          (state as ActiveWorkoutState).copyWith(
-            lastRecognizedText: rawText,
-            lastVoiceFeedback: 'Exercise "$name" not found',
-          ),
-        );
-      }
-      await _tts.speak('Could not find exercise $name');
-      return;
-    }
-
-    if (state is! ActiveWorkoutState) {
-      final Result<Workout> startRes = await _workoutRepo.startWorkout(
-        title: exercise.muscleGroup,
-      );
-      if (startRes is Success<Workout>) {
-        await _emitActiveWorkout(startRes.data, emit);
-      } else {
-        await _tts.speak('Failed to start workout');
-        return;
-      }
-    }
-
-    // Log the specified number of sets
-    for (int i = 0; i < sets; i++) {
-      add(LogSetEvent(exerciseId: exercise.id, reps: reps, weight: weight));
-    }
-
-    final String feedback = sets > 1
-        ? 'Logged $sets sets of ${exercise.name}: $reps reps at $weight kilos'
-        : 'Logged ${exercise.name}: $reps reps at $weight kilos';
-
-    if (state is ActiveWorkoutState) {
-      emit(
-        (state as ActiveWorkoutState).copyWith(
-          lastRecognizedText: rawText,
-          lastVoiceFeedback: feedback,
-        ),
-      );
-    }
-    await _tts.speak(feedback);
-  }
-
-  Future<void> _handleVoiceAddExercise(
-    String name,
-    Emitter<WorkoutState> emit,
-    String rawText,
-  ) async {
-    final Result<Exercise?> exResult = await _exerciseRepo.findExerciseByName(
-      name,
-    );
-    final Exercise? exercise = exResult.dataOrNull;
-    if (exercise != null) {
-      if (state is ActiveWorkoutState) {
-        emit(
-          (state as ActiveWorkoutState).copyWith(
-            lastRecognizedText: rawText,
-            lastVoiceFeedback: 'Added ${exercise.name}',
-          ),
-        );
-      }
-      await _tts.speak('Added ${exercise.name} to workout');
-    } else {
-      await _tts.speak('Exercise $name not found');
-    }
   }
 
   Future<void> _emitActiveWorkout(

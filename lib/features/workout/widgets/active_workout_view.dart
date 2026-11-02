@@ -7,6 +7,7 @@ import '../bloc/rest_timer_state.dart';
 import '../bloc/workout_bloc.dart';
 import '../bloc/workout_event.dart';
 import '../bloc/workout_state.dart';
+import 'empty_workout_placeholder.dart';
 import 'exercise_card_widget.dart';
 import 'rest_timer_banner.dart';
 
@@ -18,10 +19,9 @@ class ActiveWorkoutView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, List<WorkoutSet>> groupedSets =
-        <String, List<WorkoutSet>>{};
+    final Map<String, List<WorkoutSet>> grouped = <String, List<WorkoutSet>>{};
     for (final WorkoutSet s in state.sets) {
-      groupedSets.putIfAbsent(s.exerciseId, () => <WorkoutSet>[]).add(s);
+      grouped.putIfAbsent(s.exerciseId, () => <WorkoutSet>[]).add(s);
     }
 
     return Scaffold(
@@ -59,21 +59,10 @@ class ActiveWorkoutView extends StatelessWidget {
               return const SizedBox.shrink();
             },
           ),
-          if (groupedSets.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
-              child: Center(
-                child: Text(
-                  'No exercises logged yet.\nUse voice: "Log bench press 10 reps 80 kg"\nor select from Exercises tab.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
-                ),
-              ),
-            )
+          if (grouped.isEmpty)
+            const EmptyWorkoutPlaceholder()
           else
-            ...groupedSets.entries.map((
-              MapEntry<String, List<WorkoutSet>> entry,
-            ) {
+            ...grouped.entries.map((MapEntry<String, List<WorkoutSet>> entry) {
               final Exercise? ex = state.exercises[entry.key];
               if (ex == null) {
                 return const SizedBox.shrink();

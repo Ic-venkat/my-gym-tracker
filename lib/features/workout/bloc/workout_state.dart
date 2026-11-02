@@ -31,8 +31,6 @@ final class ActiveWorkoutState extends WorkoutState {
     required this.workout,
     required this.sets,
     required this.exercises,
-    this.remainingRestSeconds = 0,
-    this.isRestTimerActive = false,
     this.lastVoiceFeedback,
     this.lastRecognizedText,
   });
@@ -40,8 +38,6 @@ final class ActiveWorkoutState extends WorkoutState {
   final Workout workout;
   final List<WorkoutSet> sets;
   final Map<String, Exercise> exercises;
-  final int remainingRestSeconds;
-  final bool isRestTimerActive;
   final String? lastVoiceFeedback;
   final String? lastRecognizedText;
 
@@ -50,8 +46,6 @@ final class ActiveWorkoutState extends WorkoutState {
     Workout? workout,
     List<WorkoutSet>? sets,
     Map<String, Exercise>? exercises,
-    int? remainingRestSeconds,
-    bool? isRestTimerActive,
     String? lastVoiceFeedback,
     String? lastRecognizedText,
   }) {
@@ -59,8 +53,6 @@ final class ActiveWorkoutState extends WorkoutState {
       workout: workout ?? this.workout,
       sets: sets ?? this.sets,
       exercises: exercises ?? this.exercises,
-      remainingRestSeconds: remainingRestSeconds ?? this.remainingRestSeconds,
-      isRestTimerActive: isRestTimerActive ?? this.isRestTimerActive,
       lastVoiceFeedback: lastVoiceFeedback ?? this.lastVoiceFeedback,
       lastRecognizedText: lastRecognizedText ?? this.lastRecognizedText,
     );
@@ -71,8 +63,6 @@ final class ActiveWorkoutState extends WorkoutState {
     workout,
     sets,
     exercises,
-    remainingRestSeconds,
-    isRestTimerActive,
     lastVoiceFeedback,
     lastRecognizedText,
   ];

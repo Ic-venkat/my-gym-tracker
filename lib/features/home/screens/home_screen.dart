@@ -10,17 +10,35 @@ import '../../workout/screens/active_workout_screen.dart';
 import '../../workout/widgets/voice_mic_button.dart';
 
 /// Main scaffold hosting bottom navigation between Workout, Exercises, and History.
-class HomeScreen extends StatelessWidget {
-  HomeScreen({required this.speechService, super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({required this.speechService, super.key});
 
   final SpeechService speechService;
-  final ValueNotifier<int> _tabNotifier = ValueNotifier<int>(0);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final ValueNotifier<int> _tabNotifier;
 
   final List<Widget> _pages = const <Widget>[
     ActiveWorkoutScreen(),
     ExerciseLibraryScreen(),
     HistoryScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabNotifier = ValueNotifier<int>(0);
+  }
+
+  @override
+  void dispose() {
+    _tabNotifier.dispose();
+    super.dispose();
+  }
 
   void _onTabChanged(BuildContext context, int index) {
     _tabNotifier.value = index;
@@ -36,7 +54,9 @@ class HomeScreen extends StatelessWidget {
       builder: (BuildContext context, int currentIndex, _) {
         return Scaffold(
           body: IndexedStack(index: currentIndex, children: _pages),
-          floatingActionButton: VoiceMicButton(speechService: speechService),
+          floatingActionButton: VoiceMicButton(
+            speechService: widget.speechService,
+          ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: currentIndex,
             onDestinationSelected: (int idx) => _onTabChanged(context, idx),

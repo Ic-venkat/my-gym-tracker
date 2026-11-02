@@ -86,7 +86,10 @@ class SpeechService {
             onResult(words);
           }
         },
-        listenOptions: SpeechListenOptions(listenMode: ListenMode.dictation),
+        listenOptions: SpeechListenOptions(
+          listenMode: ListenMode.dictation,
+          onDevice: true,
+        ),
       );
       if (!_listeningController.isClosed) {
         _listeningController.add(true);
