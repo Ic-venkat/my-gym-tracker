@@ -15,3 +15,4 @@ Lifters require intelligent load progression beyond simple tracking. However, st
 ## Consequences
 - **Pros:** Unified, scientifically sound progression engine supporting loaded weightlifting, gymnastic calisthenics, and active recovery flows without external API dependencies.
 - **Cons:** Requires exercise catalog metadata (rep ranges, min increments, ladder bindings) to be maintained accurately.
+
