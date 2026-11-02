@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../templates/models/workout_template.dart';
+import '../../templates/widgets/template_picker_sheet.dart';
 import '../bloc/workout_bloc.dart';
 import '../bloc/workout_event.dart';
 
@@ -47,6 +49,21 @@ class StartWorkoutView extends StatelessWidget {
               },
               icon: const Icon(Icons.play_arrow),
               label: const Text('Start New Workout'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                TemplatePickerSheet.show(
+                  context,
+                  onSelect: (WorkoutTemplate t) {
+                    context.read<WorkoutBloc>().add(
+                      StartWorkoutEvent(title: t.name),
+                    );
+                  },
+                );
+              },
+              icon: const Icon(Icons.splitscreen_outlined, size: 18),
+              label: const Text('Start From Template'),
             ),
           ],
         ),
