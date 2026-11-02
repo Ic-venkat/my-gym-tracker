@@ -33,7 +33,8 @@ final class ActiveWorkoutState extends WorkoutState {
     required this.exercises,
     this.lastVoiceFeedback,
     this.lastRecognizedText,
-    this.requestedRestSeconds,
+    this.restCountdownSeconds,
+    this.restTriggerId = 0,
   });
 
   final Workout workout;
@@ -41,7 +42,8 @@ final class ActiveWorkoutState extends WorkoutState {
   final Map<String, Exercise> exercises;
   final String? lastVoiceFeedback;
   final String? lastRecognizedText;
-  final int? requestedRestSeconds;
+  final int? restCountdownSeconds;
+  final int restTriggerId;
 
   /// Copies state with optional updated fields.
   ActiveWorkoutState copyWith({
@@ -50,7 +52,8 @@ final class ActiveWorkoutState extends WorkoutState {
     Map<String, Exercise>? exercises,
     String? lastVoiceFeedback,
     String? lastRecognizedText,
-    int? requestedRestSeconds,
+    int? restCountdownSeconds,
+    int? restTriggerId,
   }) {
     return ActiveWorkoutState(
       workout: workout ?? this.workout,
@@ -58,7 +61,8 @@ final class ActiveWorkoutState extends WorkoutState {
       exercises: exercises ?? this.exercises,
       lastVoiceFeedback: lastVoiceFeedback ?? this.lastVoiceFeedback,
       lastRecognizedText: lastRecognizedText ?? this.lastRecognizedText,
-      requestedRestSeconds: requestedRestSeconds ?? this.requestedRestSeconds,
+      restCountdownSeconds: restCountdownSeconds ?? this.restCountdownSeconds,
+      restTriggerId: restTriggerId ?? this.restTriggerId,
     );
   }
 
@@ -69,7 +73,8 @@ final class ActiveWorkoutState extends WorkoutState {
     exercises,
     lastVoiceFeedback,
     lastRecognizedText,
-    requestedRestSeconds,
+    restCountdownSeconds,
+    restTriggerId,
   ];
 }
 

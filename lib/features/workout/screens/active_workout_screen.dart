@@ -35,12 +35,9 @@ class ActiveWorkoutScreen extends StatelessWidget {
     final RestTimerCubit timer = context.read<RestTimerCubit>();
     if (state is WorkoutCompletedState) {
       timer.skipTimer();
-    } else if (state is ActiveWorkoutState) {
-      if (state.requestedRestSeconds != null) {
-        timer.startTimer(state.requestedRestSeconds!);
-      } else if (state.sets.isNotEmpty) {
-        timer.startTimer(state.sets.last.restSeconds);
-      }
+    } else if (state is ActiveWorkoutState &&
+        state.restCountdownSeconds != null) {
+      timer.startTimer(state.restCountdownSeconds!);
     }
   }
 
@@ -50,9 +47,7 @@ class ActiveWorkoutScreen extends StatelessWidget {
       listenWhen: (WorkoutState prev, WorkoutState curr) {
         if (curr is WorkoutCompletedState) return true;
         if (prev is ActiveWorkoutState && curr is ActiveWorkoutState) {
-          return curr.sets.length > prev.sets.length ||
-              (curr.requestedRestSeconds != null &&
-                  curr.requestedRestSeconds != prev.requestedRestSeconds);
+          return curr.restTriggerId != prev.restTriggerId;
         }
         return false;
       },

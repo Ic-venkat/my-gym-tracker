@@ -81,8 +81,10 @@ class AppDatabase extends _$AppDatabase {
 
   /// Search exercises by name keyword.
   Future<List<Exercise>> searchExercises(String query) {
-    final String clean =
-        query.trim().toLowerCase().replaceAll(RegExp(r'[%_]'), '');
+    final String clean = query.trim().toLowerCase().replaceAll(
+      RegExp(r'[%_]'),
+      '',
+    );
     return (select(exercises)
           ..where(($ExercisesTable t) => t.name.lower().like('%$clean%'))
           ..orderBy(<OrderingTerm Function($ExercisesTable)>[

@@ -70,7 +70,7 @@ class SpeechService {
       final bool initialized = await initialize();
       if (!initialized) {
         AppLogger.w('Cannot start listening: Speech recognition not available');
-        return;
+        throw StateError('Speech recognition unavailable');
       }
     }
 

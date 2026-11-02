@@ -43,13 +43,16 @@ class WorkoutVoiceHandler {
         if (currentState is ActiveWorkoutState) {
           emitState(
             currentState.copyWith(
-              requestedRestSeconds: sec,
+              restCountdownSeconds: sec,
+              restTriggerId: currentState.restTriggerId + 1,
               lastVoiceFeedback: 'Rest timer set for $sec seconds',
               lastRecognizedText: rawText,
             ),
           );
+          await _tts.speak('Rest timer set for $sec seconds');
+        } else {
+          await _tts.speak('No active workout running');
         }
-        await _tts.speak('Rest timer set for $sec seconds');
 
       case LogSetCommand(
         exerciseName: final String name,

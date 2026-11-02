@@ -108,7 +108,13 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         ...current.sets,
         result.data,
       ];
-      emit(current.copyWith(sets: updatedSets));
+      emit(
+        current.copyWith(
+          sets: updatedSets,
+          restCountdownSeconds: event.restSeconds,
+          restTriggerId: current.restTriggerId + 1,
+        ),
+      );
     } else if (result is Failure<WorkoutSet>) {
       emit(WorkoutError(result.message));
     }
