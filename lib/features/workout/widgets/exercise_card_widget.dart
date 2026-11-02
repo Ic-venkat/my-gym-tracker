@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/models.dart';
-import '../../exercises/widgets/exercise_detail_sheet.dart';
-import '../bloc/workout_bloc.dart';
-import '../bloc/workout_event.dart';
-import 'add_set_dialog.dart';
+import 'exercise_card_header.dart';
 import 'set_row_widget.dart';
 
 /// Card showing an exercise, all its logged sets, and a quick set add button.
@@ -19,18 +15,6 @@ class ExerciseCardWidget extends StatelessWidget {
   final Exercise exercise;
   final List<WorkoutSet> sets;
 
-  void _showAddSetDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => AddSetDialog(
-        exerciseName: exercise.name,
-        onLog: (int reps, double weight) => context.read<WorkoutBloc>().add(
-          LogSetEvent(exerciseId: exercise.id, reps: reps, weight: weight),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -40,34 +24,7 @@ class ExerciseCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    exercise.name,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.info_outline,
-                    size: 18,
-                    color: Color(0xFF94A3B8),
-                  ),
-                  tooltip: 'Form Guide',
-                  onPressed: () => ExerciseDetailSheet.show(context, exercise),
-                ),
-                TextButton.icon(
-                  onPressed: () => _showAddSetDialog(context),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Set'),
-                ),
-              ],
-            ),
+            ExerciseCardHeader(exercise: exercise),
             const Divider(color: Color(0xFF334155), height: 16),
             ...sets.map(
               (WorkoutSet s) =>
