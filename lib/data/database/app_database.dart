@@ -39,6 +39,8 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(exercises, exercises.targetRepRange);
         await m.addColumn(exercises, exercises.minIncrementKg);
 
+        await _createIndices();
+
         await batch((Batch b) {
           b.insertAll(
             exercises,
@@ -50,18 +52,7 @@ class AppDatabase extends _$AppDatabase {
     },
     onCreate: (Migrator m) async {
       await m.createAll();
-      await customStatement(
-        'CREATE INDEX IF NOT EXISTS idx_sets_wid ON workout_sets(workout_id, created_at);',
-      );
-      await customStatement(
-        'CREATE INDEX IF NOT EXISTS idx_sets_eid ON workout_sets(exercise_id);',
-      );
-      await customStatement(
-        'CREATE INDEX IF NOT EXISTS idx_workouts_status ON workouts(completed_at, started_at);',
-      );
-      await customStatement(
-        'CREATE INDEX IF NOT EXISTS idx_exercises_cat ON exercises(muscle_group, name);',
-      );
+      await _createIndices();
       await batch((Batch b) {
         b.insertAll(
           exercises,
@@ -72,6 +63,20 @@ class AppDatabase extends _$AppDatabase {
       });
     },
   );
+
+  Future<void> _createIndices() async {
+    const List<String> indices = <String>[
+      'CREATE INDEX IF NOT EXISTS idx_sets_wid ON workout_sets(workout_id, created_at);',
+      'CREATE INDEX IF NOT EXISTS idx_sets_eid ON workout_sets(exercise_id);',
+      'CREATE INDEX IF NOT EXISTS idx_workouts_status ON workouts(completed_at, started_at);',
+      'CREATE INDEX IF NOT EXISTS idx_exercises_cat ON exercises(muscle_group, name);',
+      'CREATE INDEX IF NOT EXISTS idx_exercises_name_nocase ON exercises(name COLLATE NOCASE);',
+      'CREATE INDEX IF NOT EXISTS idx_exercises_category ON exercises(category);',
+    ];
+    for (final String sql in indices) {
+      await customStatement(sql);
+    }
+  }
 
   // Exercise Queries
 
@@ -133,9 +138,9 @@ class AppDatabase extends _$AppDatabase {
 
   // Workout Queries
 
-  /// Insert or replace workout.
+  /// Insert or upsert workout without cascade deleting sets.
   Future<int> insertWorkout(Insertable<Workout> workout) {
-    return into(workouts).insert(workout, mode: InsertMode.insertOrReplace);
+    return into(workouts).insertOnConflictUpdate(workout);
   }
 
   /// Update workout.
@@ -224,5 +229,17 @@ class AppDatabase extends _$AppDatabase {
     return (delete(
       workoutSets,
     )..where(($WorkoutSetsTable t) => t.id.equals(id))).go();
+  }
+
+  /// Returns the next sequential set number for an exercise.
+  Future<int> getNextSetNumber(String workoutId, String exerciseId) async {
+    final List<WorkoutSet> sets =
+        await (select(workoutSets)..where(
+              ($WorkoutSetsTable t) =>
+                  t.workoutId.equals(workoutId) &
+                  t.exerciseId.equals(exerciseId),
+            ))
+            .get();
+    return sets.length + 1;
   }
 }

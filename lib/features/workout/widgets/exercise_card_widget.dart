@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/models.dart';
 import 'exercise_card_header.dart';
+import 'exercise_progression_banner.dart';
 import 'set_row_widget.dart';
 
 /// Card showing an exercise, all its logged sets, and a quick set add button.
@@ -25,6 +26,7 @@ class ExerciseCardWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             ExerciseCardHeader(exercise: exercise),
+            ExerciseProgressionBanner(exercise: exercise, sets: sets),
             const Divider(color: Color(0xFF334155), height: 16),
             ...sets.map(
               (WorkoutSet s) =>

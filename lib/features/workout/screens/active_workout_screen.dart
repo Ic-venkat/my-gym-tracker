@@ -28,6 +28,13 @@ class ActiveWorkoutScreen extends StatelessWidget {
           backgroundColor: const Color(0xFFEF4444),
         ),
       );
+    } else if (state is ActiveWorkoutState && state.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.errorMessage!),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
     }
   }
 
@@ -53,6 +60,17 @@ class ActiveWorkoutScreen extends StatelessWidget {
       },
       listener: _handleRestTimer,
       child: BlocConsumer<WorkoutBloc, WorkoutState>(
+        listenWhen: (WorkoutState prev, WorkoutState curr) {
+          if (curr is WorkoutCompletedState || curr is WorkoutError) {
+            return true;
+          }
+          if (curr is ActiveWorkoutState) {
+            return curr.errorMessage != null &&
+                (prev is! ActiveWorkoutState ||
+                    prev.errorMessage != curr.errorMessage);
+          }
+          return false;
+        },
         listener: _handleStateMessages,
         builder: (BuildContext context, WorkoutState state) {
           return switch (state) {

@@ -31,6 +31,7 @@ class CategoryFilterChips extends StatelessWidget {
           final String cat = categories[index];
           final bool isSelected = cat == selectedCategory;
           return FilterChip(
+            key: ValueKey<String>(cat),
             label: Text(cat),
             selected: isSelected,
             onSelected: (_) => onSelected(cat),

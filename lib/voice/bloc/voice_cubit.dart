@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/logger/app_logger.dart';
 import '../speech_service.dart';
 import 'voice_state.dart';
 
@@ -11,7 +12,7 @@ class VoiceCubit extends Cubit<VoiceState> {
     : _speech = speechService,
       super(const VoiceIdle()) {
     _statusSub = _speech.isListeningStream.listen((bool listening) {
-      if (!listening && state is VoiceListening) {
+      if (!isClosed && !listening && state is VoiceListening) {
         emit(const VoiceIdle());
       }
     });
@@ -28,20 +29,27 @@ class VoiceCubit extends Cubit<VoiceState> {
     try {
       await _speech.startListening(
         onResult: (String text) {
-          emit(VoiceSuccess(text));
-          onResult(text);
-          emit(const VoiceIdle());
+          if (!isClosed) {
+            emit(VoiceSuccess(text));
+            onResult(text);
+            emit(const VoiceIdle());
+          }
         },
       );
-    } catch (e) {
-      emit(VoiceFailure(e.toString()));
+    } catch (e, st) {
+      AppLogger.e('Voice recognition error', error: e, stackTrace: st);
+      if (!isClosed) {
+        emit(VoiceFailure(e.toString()));
+      }
     }
   }
 
   /// Manually stops current speech listening session.
   Future<void> stopListening() async {
     await _speech.stopListening();
-    emit(const VoiceIdle());
+    if (!isClosed) {
+      emit(const VoiceIdle());
+    }
   }
 
   @override

@@ -141,15 +141,23 @@ class WorkoutVoiceHandler {
       }
     }
 
-    for (int i = 0; i < sets; i++) {
+    final int safeSets = sets.clamp(1, 20);
+    final int safeReps = reps.clamp(1, 500);
+    final double safeWeight = weight.clamp(0.0, 1000.0);
+
+    for (int i = 0; i < safeSets; i++) {
       addEvent(
-        LogSetEvent(exerciseId: exercise.id, reps: reps, weight: weight),
+        LogSetEvent(
+          exerciseId: exercise.id,
+          reps: safeReps,
+          weight: safeWeight,
+        ),
       );
     }
 
-    final String feedback = sets > 1
-        ? 'Logged $sets sets of ${exercise.name}: $reps reps at $weight kilos'
-        : 'Logged ${exercise.name}: $reps reps at $weight kilos';
+    final String feedback = safeSets > 1
+        ? 'Logged $safeSets sets of ${exercise.name}: $safeReps reps at $safeWeight kilos'
+        : 'Logged ${exercise.name}: $safeReps reps at $safeWeight kilos';
 
     if (currentState is ActiveWorkoutState) {
       emitState(

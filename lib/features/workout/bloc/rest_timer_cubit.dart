@@ -26,13 +26,21 @@ class RestTimerCubit extends Cubit<RestTimerState> {
 
     int count = seconds;
     _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      if (isClosed) {
+        t.cancel();
+        return;
+      }
       count--;
       if (count <= 0) {
         t.cancel();
-        emit(const RestTimerState());
-        _tts.speak('Rest time is up! Ready for next set.');
+        if (!isClosed) {
+          emit(const RestTimerState());
+          unawaited(_tts.speak('Rest time is up! Ready for next set.'));
+        }
       } else {
-        emit(RestTimerState(remainingSeconds: count, isActive: true));
+        if (!isClosed) {
+          emit(RestTimerState(remainingSeconds: count, isActive: true));
+        }
       }
     });
   }

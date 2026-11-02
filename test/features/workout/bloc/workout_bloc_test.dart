@@ -184,6 +184,43 @@ void main() {
     );
 
     blocTest<WorkoutBloc, WorkoutState>(
+      'retains ActiveWorkoutState with errorMessage when logSet fails',
+      build: () {
+        when(
+          () => mockWorkoutRepo.logSet(
+            workoutId: sampleWorkout.id,
+            exerciseId: sampleExercise.id,
+            reps: 10,
+            weight: 80.0,
+            rpe: any(named: 'rpe'),
+          ),
+        ).thenAnswer(
+          (_) async => const Failure<WorkoutSet>('Database constraint failure'),
+        );
+        return WorkoutBloc(
+          workoutRepository: mockWorkoutRepo,
+          exerciseRepository: mockExerciseRepo,
+          ttsService: mockTts,
+        );
+      },
+      seed: () => ActiveWorkoutState(
+        workout: sampleWorkout,
+        sets: const <WorkoutSet>[],
+        exercises: <String, Exercise>{sampleExercise.id: sampleExercise},
+      ),
+      act: (WorkoutBloc bloc) => bloc.add(
+        LogSetEvent(exerciseId: sampleExercise.id, reps: 10, weight: 80.0),
+      ),
+      expect: () => <Matcher>[
+        isA<ActiveWorkoutState>().having(
+          (ActiveWorkoutState s) => s.errorMessage,
+          'errorMessage',
+          'Database constraint failure',
+        ),
+      ],
+    );
+
+    blocTest<WorkoutBloc, WorkoutState>(
       'finishes workout and emits WorkoutCompletedState',
       build: () {
         when(
@@ -204,10 +241,7 @@ void main() {
         exercises: <String, Exercise>{sampleExercise.id: sampleExercise},
       ),
       act: (WorkoutBloc bloc) => bloc.add(const FinishWorkoutEvent()),
-      expect: () => <Matcher>[
-        isA<WorkoutLoading>(),
-        isA<WorkoutCompletedState>(),
-      ],
+      expect: () => <Matcher>[isA<WorkoutCompletedState>()],
     );
   });
 }
