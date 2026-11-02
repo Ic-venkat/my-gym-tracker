@@ -116,3 +116,4 @@ Perform monthly or on major Flutter updates:
    - Increment `schemaVersion` in `lib/data/database/app_database.dart`.
    - Implement `onUpgrade` with both DDL (`addColumn`) and batch data seeding (`InsertMode.insertOrReplace`).
    - Add a test in `test/data/database/app_database_test.dart` verifying migration from previous version.
+

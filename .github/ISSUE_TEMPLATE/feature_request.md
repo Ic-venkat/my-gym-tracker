@@ -21,3 +21,4 @@ Describe how you envision the feature working:
 
 ## 🔄 Alternatives Considered
 Any alternative solutions or workarounds you have considered.
+

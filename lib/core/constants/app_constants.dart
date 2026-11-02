@@ -13,6 +13,7 @@ class AppConstants {
     'Shoulders',
     'Arms',
     'Core',
+    'Mobility',
     'Cardio',
   ];
 }
