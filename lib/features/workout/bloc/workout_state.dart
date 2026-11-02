@@ -25,6 +25,8 @@ final class NoActiveWorkout extends WorkoutState {
   const NoActiveWorkout();
 }
 
+const Object _sentinel = Object();
+
 /// State when a workout session is actively running.
 final class ActiveWorkoutState extends WorkoutState {
   const ActiveWorkoutState({
@@ -35,6 +37,7 @@ final class ActiveWorkoutState extends WorkoutState {
     this.lastRecognizedText,
     this.restCountdownSeconds,
     this.restTriggerId = 0,
+    this.errorMessage,
   });
 
   final Workout workout;
@@ -44,25 +47,36 @@ final class ActiveWorkoutState extends WorkoutState {
   final String? lastRecognizedText;
   final int? restCountdownSeconds;
   final int restTriggerId;
+  final String? errorMessage;
 
   /// Copies state with optional updated fields.
   ActiveWorkoutState copyWith({
     Workout? workout,
     List<WorkoutSet>? sets,
     Map<String, Exercise>? exercises,
-    String? lastVoiceFeedback,
-    String? lastRecognizedText,
-    int? restCountdownSeconds,
+    Object? lastVoiceFeedback = _sentinel,
+    Object? lastRecognizedText = _sentinel,
+    Object? restCountdownSeconds = _sentinel,
     int? restTriggerId,
+    Object? errorMessage = _sentinel,
   }) {
     return ActiveWorkoutState(
       workout: workout ?? this.workout,
       sets: sets ?? this.sets,
       exercises: exercises ?? this.exercises,
-      lastVoiceFeedback: lastVoiceFeedback ?? this.lastVoiceFeedback,
-      lastRecognizedText: lastRecognizedText ?? this.lastRecognizedText,
-      restCountdownSeconds: restCountdownSeconds ?? this.restCountdownSeconds,
+      lastVoiceFeedback: identical(lastVoiceFeedback, _sentinel)
+          ? this.lastVoiceFeedback
+          : (lastVoiceFeedback is String ? lastVoiceFeedback : null),
+      lastRecognizedText: identical(lastRecognizedText, _sentinel)
+          ? this.lastRecognizedText
+          : (lastRecognizedText is String ? lastRecognizedText : null),
+      restCountdownSeconds: identical(restCountdownSeconds, _sentinel)
+          ? this.restCountdownSeconds
+          : (restCountdownSeconds is int ? restCountdownSeconds : null),
       restTriggerId: restTriggerId ?? this.restTriggerId,
+      errorMessage: identical(errorMessage, _sentinel)
+          ? this.errorMessage
+          : (errorMessage is String ? errorMessage : null),
     );
   }
 
@@ -75,6 +89,7 @@ final class ActiveWorkoutState extends WorkoutState {
     lastRecognizedText,
     restCountdownSeconds,
     restTriggerId,
+    errorMessage,
   ];
 }
 

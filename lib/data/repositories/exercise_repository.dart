@@ -18,7 +18,7 @@ class ExerciseRepository {
       return Success<List<Exercise>>(list);
     } catch (e, st) {
       AppLogger.e('Failed to load exercises', error: e, stackTrace: st);
-      return Failure<List<Exercise>>('Failed to load exercises: $e', e);
+      return Failure<List<Exercise>>('Failed to load exercises', e);
     }
   }
 
@@ -38,7 +38,7 @@ class ExerciseRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure<List<Exercise>>('Search failed: $e', e);
+      return Failure<List<Exercise>>('Search failed', e);
     }
   }
 
@@ -49,7 +49,7 @@ class ExerciseRepository {
       return Success<Exercise?>(ex);
     } catch (e, st) {
       AppLogger.e('Failed to find exercise: $name', error: e, stackTrace: st);
-      return Failure<Exercise?>('Failed to find exercise: $e', e);
+      return Failure<Exercise?>('Failed to find exercise', e);
     }
   }
 
@@ -102,7 +102,7 @@ class ExerciseRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure<Exercise>('Failed to create exercise: $e', e);
+      return Failure<Exercise>('Failed to create exercise', e);
     }
   }
 }

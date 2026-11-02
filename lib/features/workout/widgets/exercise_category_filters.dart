@@ -30,6 +30,7 @@ class ExerciseCategoryFilters extends StatelessWidget {
           final String cat = categories[index];
           final bool isSelected = cat == selectedCategory;
           return ChoiceChip(
+            key: ValueKey<String>(cat),
             label: Text(cat),
             selected: isSelected,
             onSelected: (_) => onCategorySelected(cat),

@@ -128,6 +128,59 @@ void main() {
       }
     });
 
+    test(
+      'parses weight-first phrasing with x without word reps (squat 100 x 5)',
+      () {
+        final VoiceCommand result = CommandParser.parse('squat 100 x 5');
+        expect(result, isA<LogSetCommand>());
+        if (result is LogSetCommand) {
+          expect(result.exerciseName, 'barbell back squat');
+          expect(result.weight, 100.0);
+          expect(result.reps, 5);
+        }
+      },
+    );
+
+    test('parses reps at weight phrasing (bench 10 at 80 kg)', () {
+      final VoiceCommand result = CommandParser.parse('bench 10 at 80 kg');
+      expect(result, isA<LogSetCommand>());
+      if (result is LogSetCommand) {
+        expect(result.exerciseName, 'barbell bench press');
+        expect(result.reps, 10);
+        expect(result.weight, 80.0);
+      }
+    });
+
+    test(
+      'parses compound spoken number words (twenty five kg for eight reps)',
+      () {
+        final VoiceCommand result = CommandParser.parse(
+          'bicep curl twenty five kg for eight reps',
+        );
+        expect(result, isA<LogSetCommand>());
+        if (result is LogSetCommand) {
+          expect(result.exerciseName, 'bicep curl');
+          expect(result.weight, 25.0);
+          expect(result.reps, 8);
+        }
+      },
+    );
+
+    test(
+      'parses spoken decimal numbers (two point five kg for twelve reps)',
+      () {
+        final VoiceCommand result = CommandParser.parse(
+          'lateral raise two point five kg for twelve reps',
+        );
+        expect(result, isA<LogSetCommand>());
+        if (result is LogSetCommand) {
+          expect(result.exerciseName, 'lateral raise');
+          expect(result.weight, 2.5);
+          expect(result.reps, 12);
+        }
+      },
+    );
+
     test('parses rest timer with spoken words (rest ninety seconds)', () {
       final VoiceCommand result = CommandParser.parse('rest ninety seconds');
       expect(result, isA<RestTimerCommand>());

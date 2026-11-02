@@ -20,7 +20,7 @@ class WorkoutRepository {
       return Success<Workout?>(workout);
     } catch (e, st) {
       AppLogger.e('Failed to fetch active workout', error: e, stackTrace: st);
-      return Failure<Workout?>('Failed to fetch active workout: $e', e);
+      return Failure<Workout?>('Failed to fetch active workout', e);
     }
   }
 
@@ -44,7 +44,7 @@ class WorkoutRepository {
       return Success<Workout>(newWorkout);
     } catch (e, st) {
       AppLogger.e('Failed to start workout', error: e, stackTrace: st);
-      return Failure<Workout>('Failed to start workout: $e', e);
+      return Failure<Workout>('Failed to start workout', e);
     }
   }
 
@@ -94,7 +94,7 @@ class WorkoutRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure<Workout>('Failed to finish workout: $e', e);
+      return Failure<Workout>('Failed to finish workout', e);
     }
   }
 
@@ -108,10 +108,7 @@ class WorkoutRepository {
     int restSeconds = 90,
   }) async {
     try {
-      final List<WorkoutSet> existing = await _db.getSetsForWorkout(workoutId);
-      final int setNumber =
-          existing.where((WorkoutSet s) => s.exerciseId == exerciseId).length +
-          1;
+      final int setNumber = await _db.getNextSetNumber(workoutId, exerciseId);
 
       final WorkoutSet newSet = WorkoutSet(
         id: _uuid.v4(),
@@ -134,7 +131,7 @@ class WorkoutRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure<WorkoutSet>('Failed to log set: $e', e);
+      return Failure<WorkoutSet>('Failed to log set', e);
     }
   }
 
@@ -149,7 +146,7 @@ class WorkoutRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure<List<WorkoutSet>>('Failed to load sets: $e', e);
+      return Failure<List<WorkoutSet>>('Failed to load sets', e);
     }
   }
 
@@ -169,7 +166,7 @@ class WorkoutRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure<List<Workout>>('Failed to load workout history: $e', e);
+      return Failure<List<Workout>>('Failed to load workout history', e);
     }
   }
 
@@ -185,7 +182,7 @@ class WorkoutRepository {
       return const Success<bool>(true);
     } catch (e, st) {
       AppLogger.e('Failed to delete set: $id', error: e, stackTrace: st);
-      return Failure<bool>('Failed to delete set: $e', e);
+      return Failure<bool>('Failed to delete set', e);
     }
   }
 }

@@ -36,8 +36,9 @@ class ExerciseDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isActive =
-        context.watch<WorkoutBloc>().state is ActiveWorkoutState;
+    final bool isActive = context.select<WorkoutBloc, bool>(
+      (WorkoutBloc b) => b.state is ActiveWorkoutState,
+    );
 
     return DraggableScrollableSheet(
       initialChildSize: 0.8,

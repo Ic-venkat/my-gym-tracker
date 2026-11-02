@@ -73,7 +73,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
       return;
     }
     final ActiveWorkoutState current = state as ActiveWorkoutState;
-    emit(const WorkoutLoading());
 
     final Result<Workout> result = await _workoutRepo.finishWorkout(
       workoutId: current.workout.id,
@@ -84,7 +83,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
       await _tts.speak('Workout completed! Great effort today.');
       emit(WorkoutCompletedState(result.data));
     } else if (result is Failure<Workout>) {
-      emit(WorkoutError(result.message));
+      emit(current.copyWith(errorMessage: result.message));
     }
   }
 
@@ -113,10 +112,11 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
           sets: updatedSets,
           restCountdownSeconds: event.restSeconds,
           restTriggerId: current.restTriggerId + 1,
+          errorMessage: null,
         ),
       );
     } else if (result is Failure<WorkoutSet>) {
-      emit(WorkoutError(result.message));
+      emit(current.copyWith(errorMessage: result.message));
     }
   }
 
@@ -135,9 +135,9 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
       final List<WorkoutSet> remaining = current.sets
           .where((WorkoutSet s) => s.id != event.setId)
           .toList();
-      emit(current.copyWith(sets: remaining));
+      emit(current.copyWith(sets: remaining, errorMessage: null));
     } else if (result is Failure<bool>) {
-      emit(WorkoutError(result.message));
+      emit(current.copyWith(errorMessage: result.message));
     }
   }
 

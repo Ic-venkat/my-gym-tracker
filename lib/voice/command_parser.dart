@@ -1,4 +1,5 @@
 import 'exercise_aliases.dart' as aliases;
+import 'number_word_converter.dart';
 import 'voice_command.dart';
 
 /// Pure NLP parser for converting natural speech strings into [VoiceCommand]s.
@@ -18,7 +19,7 @@ class CommandParser {
       RegExp(r'(\d+),(\d+)'),
       (Match m) => '${m.group(1)}.${m.group(2)}',
     );
-    clean = _convertNumberWords(clean);
+    clean = NumberWordConverter.convert(clean);
     clean = clean.replaceAll(RegExp(r'\s+'), ' ');
 
     // 2. Session control: Start Workout
@@ -163,9 +164,9 @@ class CommandParser {
       );
     }
 
-    // Pattern 3: Weight-first (e.g. "bench 80 kg for 10 reps", "squat 100 x 5 reps")
+    // Pattern 3: Weight-first (e.g. "bench 80 kg for 10 reps", "squat 100 x 5")
     final RegExp regexWeightFirst = RegExp(
-      r'^(?:log\s+)?(.+?)\s+(\d+(?:\.\d+)?)\s*(kg|lbs)?\s*(?:for|x)\s*(\d+)\s*reps?$',
+      r'^(?:log\s+)?(.+?)\s+(\d+(?:\.\d+)?)\s*(kg|lbs)?\s*(?:for|x)\s*(\d+)(?:\s*(?:reps?|times?))?$',
     );
     final RegExpMatch? matchWf = regexWeightFirst.firstMatch(text);
     if (matchWf != null) {
@@ -179,7 +180,7 @@ class CommandParser {
 
     // Pattern 4: "bench press 10 at 80" or "bench press 10 by 80"
     final RegExp regexShort = RegExp(
-      r'^(?:log\s+)?(.+?)\s+(\d+)\s*(?:at|by|x)\s*(\d+(?:\.\d+)?)\s*(kg|lbs)?$',
+      r'^(?:log\s+)?(.+?)\s+(\d+)\s*(?:at|by)\s*(\d+(?:\.\d+)?)\s*(kg|lbs)?$',
     );
     final RegExpMatch? matchShort = regexShort.firstMatch(text);
     if (matchShort != null) {
@@ -205,44 +206,5 @@ class CommandParser {
     }
 
     return null;
-  }
-
-  static const Map<String, String> _numberWords = <String, String>{
-    'zero': '0',
-    'one': '1',
-    'two': '2',
-    'three': '3',
-    'four': '4',
-    'five': '5',
-    'six': '6',
-    'seven': '7',
-    'eight': '8',
-    'nine': '9',
-    'ten': '10',
-    'eleven': '11',
-    'twelve': '12',
-    'thirteen': '13',
-    'fourteen': '14',
-    'fifteen': '15',
-    'sixteen': '16',
-    'seventeen': '17',
-    'eighteen': '18',
-    'nineteen': '19',
-    'twenty': '20',
-    'thirty': '30',
-    'forty': '40',
-    'fifty': '50',
-    'sixty': '60',
-    'seventy': '70',
-    'eighty': '80',
-    'ninety': '90',
-    'hundred': '100',
-  };
-
-  static String _convertNumberWords(String text) {
-    return text
-        .split(' ')
-        .map((String word) => _numberWords[word] ?? word)
-        .join(' ');
   }
 }

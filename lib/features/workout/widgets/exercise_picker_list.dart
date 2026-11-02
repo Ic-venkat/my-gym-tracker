@@ -33,6 +33,7 @@ class ExercisePickerList extends StatelessWidget {
       itemBuilder: (BuildContext ctx, int index) {
         final Exercise ex = exercises[index];
         return ListTile(
+          key: ValueKey<String>(ex.id),
           title: Text(
             ex.name,
             style: const TextStyle(fontWeight: FontWeight.w600),
