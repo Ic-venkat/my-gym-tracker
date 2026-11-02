@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:uuid/uuid.dart';
 
 import '../../core/logger/app_logger.dart';
@@ -47,6 +49,11 @@ class WorkoutRepository {
     String? notes,
   }) async {
     try {
+      final Workout? current = await _db.getWorkoutById(workoutId);
+      if (current == null) {
+        return Failure<Workout>('Workout with ID $workoutId not found');
+      }
+
       final List<WorkoutSet> sets = await _db.getSetsForWorkout(workoutId);
       double totalVolume = 0.0;
       for (final WorkoutSet s in sets) {
@@ -55,14 +62,13 @@ class WorkoutRepository {
         }
       }
 
-      final Workout? current = (await _db.getActiveWorkout());
       final DateTime now = DateTime.now();
-      final DateTime started = current?.startedAt ?? now;
-      final int duration = now.difference(started).inSeconds;
+      final DateTime started = current.startedAt;
+      final int duration = math.max(0, now.difference(started).inSeconds);
 
       final Workout updated = Workout(
         id: workoutId,
-        title: current?.title ?? 'Completed Workout',
+        title: current.title,
         startedAt: started,
         completedAt: now,
         notes: notes,
@@ -70,7 +76,12 @@ class WorkoutRepository {
         durationSeconds: duration,
       );
 
-      await _db.updateWorkout(updated);
+      final bool updatedSuccess = await _db.updateWorkout(updated);
+      if (!updatedSuccess) {
+        return Failure<Workout>(
+          'Failed to update workout $workoutId in database',
+        );
+      }
       return Success<Workout>(updated);
     } catch (e, st) {
       AppLogger.e(

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/result.dart';
-import '../../../data/database/app_database.dart';
+import '../../../data/models/models.dart';
 import '../../../data/repositories/workout_repository.dart';
 import 'history_event.dart';
 import 'history_state.dart';

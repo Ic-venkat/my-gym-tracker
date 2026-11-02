@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/database/app_database.dart';
+import '../../../data/models/models.dart';
 
 /// List item displaying exercise information and quick-add action.
 class ExerciseListTile extends StatelessWidget {

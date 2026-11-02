@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../data/database/app_database.dart';
+import '../../../data/models/models.dart';
 
 /// Card showing completed workout summary (title, date, duration, total volume).
 class HistoryWorkoutCard extends StatelessWidget {

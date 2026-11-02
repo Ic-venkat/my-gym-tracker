@@ -10,17 +10,11 @@ import '../../workout/screens/active_workout_screen.dart';
 import '../../workout/widgets/voice_mic_button.dart';
 
 /// Main scaffold hosting bottom navigation between Workout, Exercises, and History.
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({required this.speechService, super.key});
+class HomeScreen extends StatelessWidget {
+  HomeScreen({required this.speechService, super.key});
 
   final SpeechService speechService;
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+  final ValueNotifier<int> _tabNotifier = ValueNotifier<int>(0);
 
   final List<Widget> _pages = const <Widget>[
     ActiveWorkoutScreen(),
@@ -28,8 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
     HistoryScreen(),
   ];
 
-  void _onTabChanged(int index) {
-    setState(() => _currentIndex = index);
+  void _onTabChanged(BuildContext context, int index) {
+    _tabNotifier.value = index;
     if (index == 2) {
       context.read<HistoryBloc>().add(const LoadWorkoutHistory());
     }
@@ -37,21 +31,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      floatingActionButton: VoiceMicButton(speechService: widget.speechService),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: _onTabChanged,
-        destinations: const <NavigationDestination>[
-          NavigationDestination(
-            icon: Icon(Icons.fitness_center),
-            label: 'Workout',
+    return ValueListenableBuilder<int>(
+      valueListenable: _tabNotifier,
+      builder: (BuildContext context, int currentIndex, _) {
+        return Scaffold(
+          body: IndexedStack(index: currentIndex, children: _pages),
+          floatingActionButton: VoiceMicButton(speechService: speechService),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: currentIndex,
+            onDestinationSelected: (int idx) => _onTabChanged(context, idx),
+            destinations: const <NavigationDestination>[
+              NavigationDestination(
+                icon: Icon(Icons.fitness_center),
+                label: 'Workout',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.list_alt),
+                label: 'Exercises',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.history),
+                label: 'History',
+              ),
+            ],
           ),
-          NavigationDestination(icon: Icon(Icons.list_alt), label: 'Exercises'),
-          NavigationDestination(icon: Icon(Icons.history), label: 'History'),
-        ],
-      ),
+        );
+      },
     );
   }
 }

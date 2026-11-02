@@ -61,4 +61,3 @@ final class UnknownCommand extends VoiceCommand {
 
   final String rawInput;
 }
-

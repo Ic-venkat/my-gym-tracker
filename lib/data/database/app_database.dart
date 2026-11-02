@@ -20,23 +20,46 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (OpeningDetails details) async {
+      await customStatement('PRAGMA foreign_keys = ON;');
+      await customStatement('PRAGMA journal_mode = WAL;');
+    },
     onCreate: (Migrator m) async {
       await m.createAll();
-      // Seed default exercises
-      for (final Map<String, String> item in SeedExercises.initialExercises) {
-        await into(exercises).insert(
-          ExercisesCompanion.insert(
-            id: item['id']!,
-            name: item['name']!,
-            muscleGroup: item['muscleGroup']!,
-            category: item['category']!,
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_sets_wid ON workout_sets(workout_id, created_at);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_sets_eid ON workout_sets(exercise_id);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_workouts_status ON workouts(completed_at, started_at);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_exercises_cat ON exercises(muscle_group, name);',
+      );
+      await batch((Batch b) {
+        b.insertAll(
+          exercises,
+          SeedExercises.initialExercises.map(
+            (Map<String, String> item) => ExercisesCompanion.insert(
+              id: item['id']!,
+              name: item['name']!,
+              muscleGroup: item['muscleGroup']!,
+              category: item['category']!,
+            ),
           ),
         );
-      }
+      });
     },
   );
 
   // Exercise Queries
+
+  /// Insert or replace an exercise.
+  Future<int> insertExercise(Insertable<Exercise> exercise) {
+    return into(exercises).insert(exercise, mode: InsertMode.insertOrReplace);
+  }
 
   /// Returns all exercises ordered by muscle group and name.
   Future<List<Exercise>> getAllExercises() {
@@ -56,27 +79,33 @@ class AppDatabase extends _$AppDatabase {
         .watch();
   }
 
-  /// Search exercises by name.
+  /// Search exercises by name keyword.
   Future<List<Exercise>> searchExercises(String query) {
+    final String clean = query.trim().toLowerCase();
     return (select(exercises)
-          ..where(($ExercisesTable t) => t.name.like('%$query%'))
+          ..where(($ExercisesTable t) => t.name.lower().like('%$clean%'))
           ..orderBy(<OrderingTerm Function($ExercisesTable)>[
             ($ExercisesTable t) => OrderingTerm.asc(t.name),
           ]))
         .get();
   }
 
-  /// Find exercise by exact or fuzzy name match.
+  /// Find exercise by exact or fuzzy name match using direct SQL.
   Future<Exercise?> findExerciseByName(String name) async {
     final String clean = name.trim().toLowerCase();
-    final List<Exercise> all = await getAllExercises();
-    for (final Exercise ex in all) {
-      if (ex.name.toLowerCase() == clean ||
-          ex.name.toLowerCase().contains(clean)) {
-        return ex;
-      }
+    final Exercise? exact =
+        await (select(exercises)
+              ..where(($ExercisesTable t) => t.name.lower().equals(clean))
+              ..limit(1))
+            .getSingleOrNull();
+    if (exact != null) {
+      return exact;
     }
-    return null;
+
+    return (select(exercises)
+          ..where(($ExercisesTable t) => t.name.lower().like('%$clean%'))
+          ..limit(1))
+        .getSingleOrNull();
   }
 
   // Workout Queries
@@ -89,6 +118,13 @@ class AppDatabase extends _$AppDatabase {
   /// Update workout.
   Future<bool> updateWorkout(Insertable<Workout> workout) {
     return update(workouts).replace(workout);
+  }
+
+  /// Get workout by unique ID.
+  Future<Workout?> getWorkoutById(String id) {
+    return (select(
+      workouts,
+    )..where(($WorkoutsTable t) => t.id.equals(id))).getSingleOrNull();
   }
 
   /// Get active (uncompleted) workout if any.

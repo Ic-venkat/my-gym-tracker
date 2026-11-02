@@ -40,11 +40,15 @@ class SpeechService {
       _isInitialized = await _speech.initialize(
         onError: (SpeechRecognitionError error) {
           AppLogger.e('Speech recognition error: ${error.errorMsg}');
-          _listeningController.add(false);
+          if (!_listeningController.isClosed) {
+            _listeningController.add(false);
+          }
         },
         onStatus: (String status) {
           AppLogger.d('Speech recognition status: $status');
-          _listeningController.add(status == 'listening');
+          if (!_listeningController.isClosed) {
+            _listeningController.add(status == 'listening');
+          }
         },
       );
       return _isInitialized;
@@ -74,17 +78,24 @@ class SpeechService {
       await _speech.listen(
         onResult: (SpeechRecognitionResult result) {
           final String words = result.recognizedWords;
-          _wordsController.add(words);
+          if (!_wordsController.isClosed) {
+            _wordsController.add(words);
+          }
           if (result.finalResult) {
+            stopListening();
             onResult(words);
           }
         },
         listenOptions: SpeechListenOptions(listenMode: ListenMode.dictation),
       );
-      _listeningController.add(true);
+      if (!_listeningController.isClosed) {
+        _listeningController.add(true);
+      }
     } catch (e, st) {
       AppLogger.e('Error starting speech listening', error: e, stackTrace: st);
-      _listeningController.add(false);
+      if (!_listeningController.isClosed) {
+        _listeningController.add(false);
+      }
     }
   }
 
@@ -92,7 +103,9 @@ class SpeechService {
   Future<void> stopListening() async {
     try {
       await _speech.stop();
-      _listeningController.add(false);
+      if (!_listeningController.isClosed) {
+        _listeningController.add(false);
+      }
     } catch (e, st) {
       AppLogger.e('Error stopping speech listening', error: e, stackTrace: st);
     }

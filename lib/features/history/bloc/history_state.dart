@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../data/database/app_database.dart';
+import '../../../data/models/models.dart';
 
 /// Base class for history states.
 sealed class HistoryState extends Equatable {
@@ -39,4 +39,3 @@ final class HistoryError extends HistoryState {
   @override
   List<Object?> get props => <Object?>[message];
 }
-

@@ -1,85 +1,236 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_tracker/data/database/app_database.dart';
+import 'package:gym_tracker/core/utils/result.dart';
+import 'package:gym_tracker/data/models/models.dart';
 import 'package:gym_tracker/data/repositories/exercise_repository.dart';
 import 'package:gym_tracker/data/repositories/workout_repository.dart';
+import 'package:gym_tracker/features/workout/bloc/rest_timer_cubit.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_bloc.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_event.dart';
 import 'package:gym_tracker/features/workout/bloc/workout_state.dart';
 import 'package:gym_tracker/voice/tts_service.dart';
 import 'package:mocktail/mocktail.dart';
 
+class MockWorkoutRepository extends Mock implements WorkoutRepository {}
+
+class MockExerciseRepository extends Mock implements ExerciseRepository {}
+
 class MockTtsService extends Mock implements TtsService {}
 
+class MockRestTimerCubit extends Mock implements RestTimerCubit {}
+
 void main() {
-  late AppDatabase db;
-  late ExerciseRepository exerciseRepo;
-  late WorkoutRepository workoutRepo;
+  late MockWorkoutRepository mockWorkoutRepo;
+  late MockExerciseRepository mockExerciseRepo;
   late MockTtsService mockTts;
+  late MockRestTimerCubit mockRestTimer;
+
+  final Workout sampleWorkout = Workout(
+    id: 'w_1',
+    title: 'Push Day',
+    startedAt: DateTime.now(),
+    totalVolume: 0,
+    durationSeconds: 0,
+  );
+
+  final Exercise sampleExercise = Exercise(
+    id: 'ex_bench',
+    name: 'Barbell Bench Press',
+    muscleGroup: 'Chest',
+    category: 'Barbell',
+    isCustom: false,
+    createdAt: DateTime.now(),
+  );
+
+  final WorkoutSet sampleSet = WorkoutSet(
+    id: 's_1',
+    workoutId: 'w_1',
+    exerciseId: 'ex_bench',
+    setNumber: 1,
+    reps: 10,
+    weight: 80.0,
+    isCompleted: true,
+    restSeconds: 90,
+    createdAt: DateTime.now(),
+  );
 
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory());
-    exerciseRepo = ExerciseRepository(database: db);
-    workoutRepo = WorkoutRepository(database: db);
+    mockWorkoutRepo = MockWorkoutRepository();
+    mockExerciseRepo = MockExerciseRepository();
     mockTts = MockTtsService();
-    when(() => mockTts.speak(any())).thenAnswer((_) async {});
-  });
+    mockRestTimer = MockRestTimerCubit();
 
-  tearDown(() async {
-    await db.close();
+    when(() => mockTts.speak(any())).thenAnswer((_) async {});
+    when(() => mockRestTimer.startTimer(any())).thenReturn(null);
+    when(() => mockRestTimer.skipTimer()).thenReturn(null);
   });
 
   group('WorkoutBloc', () {
     blocTest<WorkoutBloc, WorkoutState>(
       'emits [WorkoutLoading, NoActiveWorkout] when no active workout exists',
-      build: () => WorkoutBloc(
-        workoutRepository: workoutRepo,
-        exerciseRepository: exerciseRepo,
-        ttsService: mockTts,
-      ),
+      build: () {
+        when(() => mockWorkoutRepo.getActiveWorkout())
+            .thenAnswer((_) async => const Success<Workout?>(null));
+        return WorkoutBloc(
+          workoutRepository: mockWorkoutRepo,
+          exerciseRepository: mockExerciseRepo,
+          ttsService: mockTts,
+          restTimerCubit: mockRestTimer,
+        );
+      },
       act: (WorkoutBloc bloc) => bloc.add(const CheckActiveWorkout()),
       expect: () => <Matcher>[isA<WorkoutLoading>(), isA<NoActiveWorkout>()],
     );
 
     blocTest<WorkoutBloc, WorkoutState>(
       'starts a new workout and emits [WorkoutLoading, ActiveWorkoutState]',
-      build: () => WorkoutBloc(
-        workoutRepository: workoutRepo,
-        exerciseRepository: exerciseRepo,
-        ttsService: mockTts,
-      ),
+      build: () {
+        when(() => mockWorkoutRepo.startWorkout(title: any(named: 'title')))
+            .thenAnswer((_) async => Success<Workout>(sampleWorkout));
+        when(() => mockWorkoutRepo.getSetsForWorkout(sampleWorkout.id))
+            .thenAnswer(
+              (_) async => const Success<List<WorkoutSet>>(<WorkoutSet>[]),
+            );
+        when(() => mockExerciseRepo.getAllExercises()).thenAnswer(
+          (_) async => Success<List<Exercise>>(<Exercise>[sampleExercise]),
+        );
+        return WorkoutBloc(
+          workoutRepository: mockWorkoutRepo,
+          exerciseRepository: mockExerciseRepo,
+          ttsService: mockTts,
+          restTimerCubit: mockRestTimer,
+        );
+      },
       act: (WorkoutBloc bloc) =>
-          bloc.add(const StartWorkoutEvent(title: 'Chest & Arms')),
+          bloc.add(const StartWorkoutEvent(title: 'Push Day')),
       expect: () => <Matcher>[
         isA<WorkoutLoading>(),
         isA<ActiveWorkoutState>().having(
           (ActiveWorkoutState s) => s.workout.title,
           'title',
-          'Chest & Arms',
+          'Push Day',
         ),
       ],
     );
 
     blocTest<WorkoutBloc, WorkoutState>(
-      'handles voice command to start workout',
-      build: () => WorkoutBloc(
-        workoutRepository: workoutRepo,
-        exerciseRepository: exerciseRepo,
-        ttsService: mockTts,
-      ),
+      'emits WorkoutError when startWorkout fails',
+      build: () {
+        when(() => mockWorkoutRepo.startWorkout(title: any(named: 'title')))
+            .thenAnswer((_) async => const Failure<Workout>('DB Disk Full'));
+        return WorkoutBloc(
+          workoutRepository: mockWorkoutRepo,
+          exerciseRepository: mockExerciseRepo,
+          ttsService: mockTts,
+          restTimerCubit: mockRestTimer,
+        );
+      },
       act: (WorkoutBloc bloc) =>
-          bloc.add(const VoiceCommandReceived('start workout legs')),
+          bloc.add(const StartWorkoutEvent(title: 'Push Day')),
       expect: () => <Matcher>[
         isA<WorkoutLoading>(),
+        isA<WorkoutError>().having(
+          (WorkoutError s) => s.message,
+          'message',
+          'DB Disk Full',
+        ),
+      ],
+    );
+
+    blocTest<WorkoutBloc, WorkoutState>(
+      'logs set and triggers rest timer',
+      build: () {
+        when(
+          () => mockWorkoutRepo.logSet(
+            workoutId: sampleWorkout.id,
+            exerciseId: sampleExercise.id,
+            reps: 10,
+            weight: 80.0,
+            rpe: any(named: 'rpe'),
+          ),
+        ).thenAnswer((_) async => Success<WorkoutSet>(sampleSet));
+        return WorkoutBloc(
+          workoutRepository: mockWorkoutRepo,
+          exerciseRepository: mockExerciseRepo,
+          ttsService: mockTts,
+          restTimerCubit: mockRestTimer,
+        );
+      },
+      seed: () => ActiveWorkoutState(
+        workout: sampleWorkout,
+        sets: const <WorkoutSet>[],
+        exercises: <String, Exercise>{sampleExercise.id: sampleExercise},
+      ),
+      act: (WorkoutBloc bloc) => bloc.add(
+        LogSetEvent(exerciseId: sampleExercise.id, reps: 10, weight: 80.0),
+      ),
+      expect: () => <Matcher>[
         isA<ActiveWorkoutState>().having(
-          (ActiveWorkoutState s) => s.workout.title,
-          'title',
-          'Legs',
+          (ActiveWorkoutState s) => s.sets.length,
+          'sets length',
+          1,
         ),
       ],
       verify: (_) {
-        verify(() => mockTts.speak('Starting Legs')).called(1);
+        verify(() => mockRestTimer.startTimer(90)).called(1);
+      },
+    );
+
+    blocTest<WorkoutBloc, WorkoutState>(
+      'deletes set when DeleteSetEvent is triggered',
+      build: () {
+        when(() => mockWorkoutRepo.deleteWorkoutSet(sampleSet.id))
+            .thenAnswer((_) async => const Success<bool>(true));
+        return WorkoutBloc(
+          workoutRepository: mockWorkoutRepo,
+          exerciseRepository: mockExerciseRepo,
+          ttsService: mockTts,
+          restTimerCubit: mockRestTimer,
+        );
+      },
+      seed: () => ActiveWorkoutState(
+        workout: sampleWorkout,
+        sets: <WorkoutSet>[sampleSet],
+        exercises: <String, Exercise>{sampleExercise.id: sampleExercise},
+      ),
+      act: (WorkoutBloc bloc) => bloc.add(DeleteSetEvent(sampleSet.id)),
+      expect: () => <Matcher>[
+        isA<ActiveWorkoutState>().having(
+          (ActiveWorkoutState s) => s.sets,
+          'sets empty',
+          isEmpty,
+        ),
+      ],
+    );
+
+    blocTest<WorkoutBloc, WorkoutState>(
+      'finishes workout and emits WorkoutCompletedState',
+      build: () {
+        when(
+          () => mockWorkoutRepo.finishWorkout(
+            workoutId: sampleWorkout.id,
+            notes: any(named: 'notes'),
+          ),
+        ).thenAnswer((_) async => Success<Workout>(sampleWorkout));
+        return WorkoutBloc(
+          workoutRepository: mockWorkoutRepo,
+          exerciseRepository: mockExerciseRepo,
+          ttsService: mockTts,
+          restTimerCubit: mockRestTimer,
+        );
+      },
+      seed: () => ActiveWorkoutState(
+        workout: sampleWorkout,
+        sets: <WorkoutSet>[sampleSet],
+        exercises: <String, Exercise>{sampleExercise.id: sampleExercise},
+      ),
+      act: (WorkoutBloc bloc) => bloc.add(const FinishWorkoutEvent()),
+      expect: () => <Matcher>[
+        isA<WorkoutLoading>(),
+        isA<WorkoutCompletedState>(),
+      ],
+      verify: (_) {
+        verify(() => mockRestTimer.skipTimer()).called(1);
       },
     );
   });
