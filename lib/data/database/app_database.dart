@@ -38,6 +38,14 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(exercises, exercises.defaultRestSeconds);
         await m.addColumn(exercises, exercises.targetRepRange);
         await m.addColumn(exercises, exercises.minIncrementKg);
+
+        await batch((Batch b) {
+          b.insertAll(
+            exercises,
+            SeedExercises.allSeeds.map((SeedExerciseData s) => s.toCompanion()),
+            mode: InsertMode.insertOrReplace,
+          );
+        });
       }
     },
     onCreate: (Migrator m) async {

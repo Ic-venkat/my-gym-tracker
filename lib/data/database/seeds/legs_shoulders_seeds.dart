@@ -4,7 +4,7 @@ import 'seed_model.dart';
 const List<SeedExerciseData> legsShouldersSeeds = <SeedExerciseData>[
   // Legs
   SeedExerciseData(
-    id: 'ex_barbell_squat',
+    id: 'ex_squat',
     name: 'Barbell Back Squat',
     muscleGroup: 'Legs',
     secondaryMuscles: 'Gluteus Maximus, Hamstrings, Adductors, Core',
@@ -38,7 +38,7 @@ const List<SeedExerciseData> legsShouldersSeeds = <SeedExerciseData>[
     minIncrementKg: 2.5,
   ),
   SeedExerciseData(
-    id: 'ex_rdl',
+    id: 'ex_romanian_deadlift',
     name: 'Romanian Deadlift',
     muscleGroup: 'Legs',
     secondaryMuscles: 'Hamstrings, Gluteus Maximus, Erector Spinae',
@@ -53,6 +53,24 @@ const List<SeedExerciseData> legsShouldersSeeds = <SeedExerciseData>[
     defaultRestSeconds: 120,
     targetRepRange: '8-10',
     minIncrementKg: 2.5,
+  ),
+  SeedExerciseData(
+    id: 'ex_bulgarian_split_squat',
+    name: 'Bulgarian Split Squat',
+    muscleGroup: 'Legs',
+    secondaryMuscles: 'Quadriceps, Glutes, Adductors, Core',
+    category: 'Dumbbell',
+    movementPattern: 'knee_dominant',
+    mechanics: 'compound',
+    equipment: 'dumbbell',
+    difficulty: 'intermediate',
+    youtubeVideoId: '2C-uNgKwPLE',
+    formCues: '1. Rear foot elevated on bench.\n2. Lower hips straight down.\n3. Keep front knee tracking over toes.',
+    commonMistakes:
+        'Front foot too close causing heel to lift, collapsing forward.',
+    defaultRestSeconds: 90,
+    targetRepRange: '8-12',
+    minIncrementKg: 2.0,
   ),
   SeedExerciseData(
     id: 'ex_leg_press',
@@ -126,7 +144,7 @@ const List<SeedExerciseData> legsShouldersSeeds = <SeedExerciseData>[
 
   // Shoulders
   SeedExerciseData(
-    id: 'ex_ohp',
+    id: 'ex_overhead_press',
     name: 'Overhead Press',
     muscleGroup: 'Shoulders',
     secondaryMuscles: 'Triceps, Upper Chest, Trapezius, Core',
@@ -192,5 +210,22 @@ const List<SeedExerciseData> legsShouldersSeeds = <SeedExerciseData>[
     defaultRestSeconds: 60,
     targetRepRange: '15-20',
     minIncrementKg: 1.25,
+  ),
+  SeedExerciseData(
+    id: 'ex_rear_delt_fly',
+    name: 'Rear Delt Dumbbell Fly',
+    muscleGroup: 'Shoulders',
+    secondaryMuscles: 'Rear Deltoids, Rhomboids, Trapezius',
+    category: 'Dumbbell',
+    movementPattern: 'horizontal_pull',
+    mechanics: 'isolation',
+    equipment: 'dumbbell',
+    difficulty: 'beginner',
+    youtubeVideoId: 'EA7uKJdcQac',
+    formCues: '1. Hinge at hips with flat back.\n2. Raise dumbbells in wide arc with elbows soft.\n3. Squeeze rear delts at top.',
+    commonMistakes: 'Using momentum, shrugging with upper traps.',
+    defaultRestSeconds: 60,
+    targetRepRange: '12-15',
+    minIncrementKg: 1.0,
   ),
 ];

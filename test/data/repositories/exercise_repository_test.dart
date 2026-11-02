@@ -52,24 +52,49 @@ void main() {
       },
     );
 
-    test('createCustomExercise saves user-defined exercise', () async {
-      final Result<Exercise> result = await repository.createCustomExercise(
-        name: 'Cable Lateral Raise',
-        muscleGroup: 'Shoulders',
-        category: 'Cable',
-        instructions: 'Lean slightly away from cable column',
-      );
+    test(
+      'createCustomExercise saves user-defined exercise with enriched metadata',
+      () async {
+        final Result<Exercise> result = await repository.createCustomExercise(
+          name: 'Cable Lateral Raise',
+          muscleGroup: 'Shoulders',
+          category: 'Cable',
+          instructions: 'Lean slightly away from cable column',
+          secondaryMuscles: 'Trapezius, Forearms',
+          movementPattern: 'isolation',
+          mechanics: 'isolation',
+          equipment: 'cable',
+          difficulty: 'intermediate',
+          youtubeVideoId: 'dQw4w9WgXcQ',
+          formCues: 'Keep elbows high',
+          commonMistakes: 'Shrugging traps',
+          defaultRestSeconds: 75,
+          targetRepRange: '12-15',
+          minIncrementKg: 1.25,
+        );
 
-      expect(result, isA<Success<Exercise>>());
-      final Exercise custom = (result as Success<Exercise>).data;
-      expect(custom.name, 'Cable Lateral Raise');
-      expect(custom.isCustom, isTrue);
-      expect(custom.id.startsWith('custom_'), isTrue);
+        expect(result, isA<Success<Exercise>>());
+        final Exercise custom = (result as Success<Exercise>).data;
+        expect(custom.name, 'Cable Lateral Raise');
+        expect(custom.isCustom, isTrue);
+        expect(custom.id.startsWith('custom_'), isTrue);
+        expect(custom.secondaryMuscles, 'Trapezius, Forearms');
+        expect(custom.movementPattern, 'isolation');
+        expect(custom.mechanics, 'isolation');
+        expect(custom.equipment, 'cable');
+        expect(custom.difficulty, 'intermediate');
+        expect(custom.youtubeVideoId, 'dQw4w9WgXcQ');
+        expect(custom.formCues, 'Keep elbows high');
+        expect(custom.commonMistakes, 'Shrugging traps');
+        expect(custom.defaultRestSeconds, 75);
+        expect(custom.targetRepRange, '12-15');
+        expect(custom.minIncrementKg, 1.25);
 
-      final Result<Exercise?> lookup = await repository.findExerciseByName(
-        'Cable Lateral Raise',
-      );
-      expect((lookup as Success<Exercise?>).data?.id, custom.id);
-    });
+        final Result<Exercise?> lookup = await repository.findExerciseByName(
+          'Cable Lateral Raise',
+        );
+        expect((lookup as Success<Exercise?>).data?.id, custom.id);
+      },
+    );
   });
 }
