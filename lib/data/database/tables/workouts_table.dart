@@ -26,3 +26,4 @@ class Workouts extends Table {
   @override
   Set<Column<Object>> get primaryKey => <Column<Object>>{id};
 }
+

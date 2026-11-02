@@ -39,3 +39,4 @@ final class HistoryError extends HistoryState {
   @override
   List<Object?> get props => <Object?>[message];
 }
+

@@ -12,3 +12,4 @@ sealed class HistoryEvent extends Equatable {
 final class LoadWorkoutHistory extends HistoryEvent {
   const LoadWorkoutHistory();
 }
+

@@ -43,3 +43,4 @@ final class ExercisesError extends ExercisesState {
   @override
   List<Object?> get props => <Object?>[message];
 }
+
