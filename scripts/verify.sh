@@ -28,3 +28,4 @@ print('✅ All non-generated files in lib/ comply with <= 250 lines!')
 "
 
 echo "🎉 All local quality checks passed! Code is clean for push."
+
