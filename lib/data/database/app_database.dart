@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'connection/connection.dart' as impl;
 import 'seed_exercises.dart';
+import 'seeds/seed_model.dart';
 import 'tables/exercises_table.dart';
 import 'tables/workout_sets_table.dart';
 import 'tables/workouts_table.dart';
@@ -16,13 +17,36 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? impl.openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     beforeOpen: (OpeningDetails details) async {
       await customStatement('PRAGMA foreign_keys = ON;');
       await customStatement('PRAGMA journal_mode = WAL;');
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.addColumn(exercises, exercises.secondaryMuscles);
+        await m.addColumn(exercises, exercises.movementPattern);
+        await m.addColumn(exercises, exercises.mechanics);
+        await m.addColumn(exercises, exercises.equipment);
+        await m.addColumn(exercises, exercises.difficulty);
+        await m.addColumn(exercises, exercises.youtubeVideoId);
+        await m.addColumn(exercises, exercises.formCues);
+        await m.addColumn(exercises, exercises.commonMistakes);
+        await m.addColumn(exercises, exercises.defaultRestSeconds);
+        await m.addColumn(exercises, exercises.targetRepRange);
+        await m.addColumn(exercises, exercises.minIncrementKg);
+
+        await batch((Batch b) {
+          b.insertAll(
+            exercises,
+            SeedExercises.allSeeds.map((SeedExerciseData s) => s.toCompanion()),
+            mode: InsertMode.insertOrReplace,
+          );
+        });
+      }
     },
     onCreate: (Migrator m) async {
       await m.createAll();
@@ -41,13 +65,8 @@ class AppDatabase extends _$AppDatabase {
       await batch((Batch b) {
         b.insertAll(
           exercises,
-          SeedExercises.initialExercises.map(
-            (Map<String, String> item) => ExercisesCompanion.insert(
-              id: item['id']!,
-              name: item['name']!,
-              muscleGroup: item['muscleGroup']!,
-              category: item['category']!,
-            ),
+          SeedExercises.allSeeds.map(
+            (SeedExerciseData item) => item.toCompanion(),
           ),
         );
       });
