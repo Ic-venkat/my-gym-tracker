@@ -4,7 +4,10 @@ import 'package:logger/logger.dart';
 class AppLogger {
   AppLogger._();
 
-  static final Logger _logger = Logger(printer: PrettyPrinter(methodCount: 1));
+  static final Logger _logger = Logger(
+    filter: DevelopmentFilter(),
+    printer: PrettyPrinter(methodCount: 1),
+  );
 
   /// Log debug messages.
   static void d(String message) {

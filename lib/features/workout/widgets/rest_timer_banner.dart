@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/workout_bloc.dart';
-import '../bloc/workout_event.dart';
+import '../bloc/rest_timer_cubit.dart';
 
 /// Floating banner showing active rest timer countdown and skip control.
 class RestTimerBanner extends StatelessWidget {
@@ -43,7 +42,7 @@ class RestTimerBanner extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              context.read<WorkoutBloc>().add(const TriggerRestTimer(0));
+              context.read<RestTimerCubit>().skipTimer();
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.black,

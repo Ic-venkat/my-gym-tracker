@@ -78,23 +78,3 @@ final class VoiceCommandReceived extends WorkoutEvent {
   @override
   List<Object?> get props => <Object?>[rawText];
 }
-
-/// Event to start or update a rest timer.
-final class TriggerRestTimer extends WorkoutEvent {
-  const TriggerRestTimer(this.seconds);
-
-  final int seconds;
-
-  @override
-  List<Object?> get props => <Object?>[seconds];
-}
-
-/// Internal event triggered every second to tick rest timer.
-final class RestTimerTicked extends WorkoutEvent {
-  const RestTimerTicked(this.remainingSeconds);
-
-  final int remainingSeconds;
-
-  @override
-  List<Object?> get props => <Object?>[remainingSeconds];
-}

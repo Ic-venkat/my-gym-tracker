@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../data/database/app_database.dart';
+import '../../../data/models/models.dart';
 
 /// Base class for all workout states.
 sealed class WorkoutState extends Equatable {
@@ -31,38 +31,38 @@ final class ActiveWorkoutState extends WorkoutState {
     required this.workout,
     required this.sets,
     required this.exercises,
-    this.remainingRestSeconds = 0,
-    this.isRestTimerActive = false,
     this.lastVoiceFeedback,
     this.lastRecognizedText,
+    this.restCountdownSeconds,
+    this.restTriggerId = 0,
   });
 
   final Workout workout;
   final List<WorkoutSet> sets;
   final Map<String, Exercise> exercises;
-  final int remainingRestSeconds;
-  final bool isRestTimerActive;
   final String? lastVoiceFeedback;
   final String? lastRecognizedText;
+  final int? restCountdownSeconds;
+  final int restTriggerId;
 
   /// Copies state with optional updated fields.
   ActiveWorkoutState copyWith({
     Workout? workout,
     List<WorkoutSet>? sets,
     Map<String, Exercise>? exercises,
-    int? remainingRestSeconds,
-    bool? isRestTimerActive,
     String? lastVoiceFeedback,
     String? lastRecognizedText,
+    int? restCountdownSeconds,
+    int? restTriggerId,
   }) {
     return ActiveWorkoutState(
       workout: workout ?? this.workout,
       sets: sets ?? this.sets,
       exercises: exercises ?? this.exercises,
-      remainingRestSeconds: remainingRestSeconds ?? this.remainingRestSeconds,
-      isRestTimerActive: isRestTimerActive ?? this.isRestTimerActive,
       lastVoiceFeedback: lastVoiceFeedback ?? this.lastVoiceFeedback,
       lastRecognizedText: lastRecognizedText ?? this.lastRecognizedText,
+      restCountdownSeconds: restCountdownSeconds ?? this.restCountdownSeconds,
+      restTriggerId: restTriggerId ?? this.restTriggerId,
     );
   }
 
@@ -71,10 +71,10 @@ final class ActiveWorkoutState extends WorkoutState {
     workout,
     sets,
     exercises,
-    remainingRestSeconds,
-    isRestTimerActive,
     lastVoiceFeedback,
     lastRecognizedText,
+    restCountdownSeconds,
+    restTriggerId,
   ];
 }
 

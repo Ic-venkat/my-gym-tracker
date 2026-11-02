@@ -59,11 +59,10 @@ Feature-first Clean Architecture with BLoC pattern. See [AGENTS.md](AGENTS.md) f
 
 ```
 lib/
-├── core/          # Shared utilities, theme, router
+├── core/          # Shared utilities, theme, logger, constants
 ├── data/          # Database, models, repositories
-├── features/      # Feature modules (workout, exercises, stats...)
-├── voice/         # Speech-to-text, TTS, command parser
-└── di/            # Dependency injection
+├── features/      # Feature modules (workout, exercises, history...)
+└── voice/         # Speech-to-text, TTS, command parser
 ```
 
 ## Contributing
@@ -84,7 +83,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Key rules:
 | Voice Input | speech_to_text (on-device) |
 | Voice Output | flutter_tts (on-device) |
 | Charts | fl_chart |
-| Navigation | go_router |
+| Navigation | NavigationBar (Material 3) |
 
 ## License
 

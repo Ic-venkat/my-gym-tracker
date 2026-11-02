@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../data/database/app_database.dart';
+import '../../../data/models/models.dart';
 import '../bloc/workout_bloc.dart';
 import '../bloc/workout_event.dart';
 import 'add_set_dialog.dart';

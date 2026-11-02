@@ -16,6 +16,7 @@ class TtsService {
       await _tts.setLanguage('en-US');
       await _tts.setPitch(1.0);
       await _tts.setSpeechRate(0.5);
+      await _tts.awaitSpeakCompletion(true);
       _isReady = true;
     } catch (e, st) {
       AppLogger.e('Failed to initialize TTS service', error: e, stackTrace: st);

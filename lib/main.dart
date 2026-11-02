@@ -10,8 +10,10 @@ import 'features/exercises/bloc/exercises_event.dart';
 import 'features/history/bloc/history_bloc.dart';
 import 'features/history/bloc/history_event.dart';
 import 'features/home/screens/home_screen.dart';
+import 'features/workout/bloc/rest_timer_cubit.dart';
 import 'features/workout/bloc/workout_bloc.dart';
 import 'features/workout/bloc/workout_event.dart';
+import 'voice/bloc/voice_cubit.dart';
 import 'voice/speech_service.dart';
 import 'voice/tts_service.dart';
 
@@ -57,14 +59,20 @@ class GymTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: <BlocProvider<dynamic>>[
+      providers: [
+        BlocProvider<VoiceCubit>(
+          create: (_) => VoiceCubit(speechService: speechService),
+        ),
+        BlocProvider<RestTimerCubit>(
+          create: (_) => RestTimerCubit(ttsService: ttsService),
+        ),
         BlocProvider<ExercisesBloc>(
           create: (_) =>
               ExercisesBloc(exerciseRepository: exerciseRepository)
                 ..add(const LoadExercises()),
         ),
         BlocProvider<WorkoutBloc>(
-          create: (_) => WorkoutBloc(
+          create: (BuildContext c) => WorkoutBloc(
             workoutRepository: workoutRepository,
             exerciseRepository: exerciseRepository,
             ttsService: ttsService,
@@ -80,7 +88,7 @@ class GymTrackerApp extends StatelessWidget {
         title: 'GymTracker',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
-        home: HomeScreen(speechService: speechService),
+        home: const HomeScreen(),
       ),
     );
   }

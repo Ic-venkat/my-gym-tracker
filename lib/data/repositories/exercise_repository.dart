@@ -72,7 +72,7 @@ class ExerciseRepository {
         createdAt: DateTime.now(),
       );
 
-      await _db.into(_db.exercises).insert(newExercise);
+      await _db.insertExercise(newExercise);
       return Success<Exercise>(newExercise);
     } catch (e, st) {
       AppLogger.e(
