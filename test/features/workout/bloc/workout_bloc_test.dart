@@ -10,6 +10,8 @@ import 'package:gym_tracker/features/workout/bloc/workout_state.dart';
 import 'package:gym_tracker/voice/tts_service.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../helpers/test_factories.dart';
+
 class MockWorkoutRepository extends Mock implements WorkoutRepository {}
 
 class MockExerciseRepository extends Mock implements ExerciseRepository {}
@@ -29,14 +31,7 @@ void main() {
     durationSeconds: 0,
   );
 
-  final Exercise sampleExercise = Exercise(
-    id: 'ex_bench',
-    name: 'Barbell Bench Press',
-    muscleGroup: 'Chest',
-    category: 'Barbell',
-    isCustom: false,
-    createdAt: DateTime.now(),
-  );
+  final Exercise sampleExercise = createTestExercise();
 
   final WorkoutSet sampleSet = WorkoutSet(
     id: 's_1',

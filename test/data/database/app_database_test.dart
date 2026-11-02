@@ -59,7 +59,7 @@ void main() {
       final WorkoutSet set = WorkoutSet(
         id: 's_test_1',
         workoutId: 'w_test_sets',
-        exerciseId: 'ex_squat',
+        exerciseId: 'ex_barbell_squat',
         setNumber: 1,
         reps: 8,
         weight: 120.0,

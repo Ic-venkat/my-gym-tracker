@@ -8,27 +8,19 @@ import 'package:gym_tracker/features/exercises/bloc/exercises_event.dart';
 import 'package:gym_tracker/features/exercises/bloc/exercises_state.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../helpers/test_factories.dart';
+
 class MockExerciseRepository extends Mock implements ExerciseRepository {}
 
 void main() {
   late MockExerciseRepository mockRepo;
 
   final List<Exercise> sampleExercises = <Exercise>[
-    Exercise(
-      id: 'ex_1',
-      name: 'Barbell Bench Press',
-      muscleGroup: 'Chest',
-      category: 'Barbell',
-      isCustom: false,
-      createdAt: DateTime.now(),
-    ),
-    Exercise(
+    createTestExercise(id: 'ex_1'),
+    createTestExercise(
       id: 'ex_2',
       name: 'Barbell Back Squat',
       muscleGroup: 'Legs',
-      category: 'Barbell',
-      isCustom: false,
-      createdAt: DateTime.now(),
     ),
   ];
 
