@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Lint, Test & Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java (for Android tooling compatibility)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: 'stable'
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Generate Drift / Freezed Code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Verify Code Formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Project Source
+        run: flutter analyze
+
+      - name: Run Automated Test Suite
+        run: flutter test --coverage
+
+      - name: Verify Architecture File Line Bounds (<= 250 lines in lib/)
+        run: |
+          python3 -c "
+          import glob, sys
+          failed = []
+          for path in glob.glob('lib/**/*.dart', recursive=True):
+              if path.endswith('.g.dart') or path.endswith('.freezed.dart'):
+                  continue
+              with open(path) as f:
+                  count = len(f.readlines())
+                  if count > 250:
+                      failed.append((path, count))
+          if failed:
+              print('Files violating AGENTS.md 250-line limit:', failed)
+              sys.exit(1)
+          print('All non-generated files in lib/ comply with <= 250 lines!')
+          "
