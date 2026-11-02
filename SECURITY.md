@@ -24,3 +24,4 @@ If you believe you have discovered a security vulnerability (such as SQL injecti
    - Potential impact on local device storage.
 3. You will receive an initial response acknowledging the report within **48 hours**.
 4. We ask that you practice responsible disclosure and give us time to remediate the vulnerability before public announcement.
+
