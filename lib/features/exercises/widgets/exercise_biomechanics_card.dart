@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/models.dart';
+import 'exercise_stats_row.dart';
 
 /// Card showing structured biomechanical tags, rep ranges, and equipment.
 class ExerciseBiomechanicsCard extends StatelessWidget {
@@ -72,21 +73,10 @@ class ExerciseBiomechanicsCard extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(height: 1, color: Color(0xFF334155)),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              _buildStat('Rep Range', exercise.targetRepRange, Icons.repeat),
-              _buildStat(
-                'Rest',
-                '${exercise.defaultRestSeconds}s',
-                Icons.timer_outlined,
-              ),
-              _buildStat(
-                'Increment',
-                '+${exercise.minIncrementKg} kg',
-                Icons.fitness_center,
-              ),
-            ],
+          ExerciseStatsRow(
+            repRange: exercise.targetRepRange,
+            restSeconds: exercise.defaultRestSeconds,
+            incrementKg: exercise.minIncrementKg,
           ),
           if (exercise.secondaryMuscles != null &&
               exercise.secondaryMuscles!.isNotEmpty) ...<Widget>[
@@ -102,23 +92,6 @@ class ExerciseBiomechanicsCard extends StatelessWidget {
           ],
         ],
       ),
-    );
-  }
-
-  Widget _buildStat(String label, String value, IconData icon) {
-    return Column(
-      children: <Widget>[
-        Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-        Text(
-          label,
-          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
-        ),
-      ],
     );
   }
 }

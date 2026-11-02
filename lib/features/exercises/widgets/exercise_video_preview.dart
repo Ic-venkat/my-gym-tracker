@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/logger/app_logger.dart';
 import '../../../data/models/models.dart';
+import 'video_thumbnail_overlay.dart';
 
 /// Card showing YouTube Shorts video preview thumbnail with one-tap launcher.
 class ExerciseVideoPreview extends StatelessWidget {
@@ -14,7 +15,8 @@ class ExerciseVideoPreview extends StatelessWidget {
     final String? videoId = exercise.youtubeVideoId;
     if (videoId == null || videoId.isEmpty) return;
 
-    final Uri url = Uri.parse('https://www.youtube.com/shorts/$videoId');
+    final String sanitizedId = Uri.encodeComponent(videoId.trim());
+    final Uri url = Uri.parse('https://www.youtube.com/shorts/$sanitizedId');
     try {
       final bool launched = await launchUrl(
         url,
@@ -27,13 +29,14 @@ class ExerciseVideoPreview extends StatelessWidget {
       }
     } catch (e, stack) {
       AppLogger.e(
-        'Failed to launch YouTube Shorts URL: $url',
+        'Failed to launch YouTube Shorts: $url',
         error: e,
         stackTrace: stack,
       );
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error launching video: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Unable to open video')));
       }
     }
   }
@@ -59,66 +62,7 @@ class ExerciseVideoPreview extends StatelessWidget {
           color: const Color(0xFF1E293B),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            Image.network(
-              thumbnailUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const Center(
-                child: Icon(Icons.videocam_off, color: Colors.grey, size: 40),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: <Color>[
-                    Colors.black.withValues(alpha: 0.2),
-                    Colors.black.withValues(alpha: 0.75),
-                  ],
-                ),
-              ),
-            ),
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.play_arrow,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const Positioned(
-              bottom: 12,
-              left: 12,
-              right: 12,
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.video_library, size: 16, color: Colors.white70),
-                  SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'Watch Form Demonstration (Shorts)',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.open_in_new, size: 14, color: Colors.white70),
-                ],
-              ),
-            ),
-          ],
-        ),
+        child: VideoThumbnailOverlay(thumbnailUrl: thumbnailUrl),
       ),
     );
   }

@@ -3,12 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/models.dart';
 import '../../workout/bloc/workout_bloc.dart';
-import '../../workout/bloc/workout_event.dart';
 import '../../workout/bloc/workout_state.dart';
-import '../../workout/widgets/add_set_dialog.dart';
-import 'exercise_biomechanics_card.dart';
-import 'exercise_cues_card.dart';
-import 'exercise_video_preview.dart';
+import 'exercise_detail_action_handler.dart';
+import 'exercise_detail_content.dart';
+import 'exercise_detail_header.dart';
 
 /// Modal bottom sheet presenting full posture, video, and biomechanical cues.
 class ExerciseDetailSheet extends StatelessWidget {
@@ -36,37 +34,10 @@ class ExerciseDetailSheet extends StatelessWidget {
     );
   }
 
-  void _onActionButtonPressed(BuildContext context) {
-    Navigator.of(context).pop();
-    if (onSelect != null) {
-      onSelect!();
-      return;
-    }
-
-    final WorkoutState workoutState = context.read<WorkoutBloc>().state;
-    if (workoutState is ActiveWorkoutState) {
-      showDialog<void>(
-        context: context,
-        builder: (_) => AddSetDialog(
-          exerciseName: exercise.name,
-          onLog: (int reps, double weight) {
-            context.read<WorkoutBloc>().add(
-              LogSetEvent(exerciseId: exercise.id, reps: reps, weight: weight),
-            );
-          },
-        ),
-      );
-    } else {
-      context.read<WorkoutBloc>().add(
-        StartWorkoutEvent(title: exercise.muscleGroup),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final WorkoutState workoutState = context.watch<WorkoutBloc>().state;
-    final bool isActive = workoutState is ActiveWorkoutState;
+    final bool isActive =
+        context.watch<WorkoutBloc>().state is ActiveWorkoutState;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.8,
@@ -85,61 +56,15 @@ class ExerciseDetailSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      exercise.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
+            ExerciseDetailHeader(title: exercise.name),
             const Divider(height: 1, color: Color(0xFF334155)),
             Expanded(
-              child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.all(20),
-                children: <Widget>[
-                  ExerciseVideoPreview(exercise: exercise),
-                  const SizedBox(height: 12),
-                  ExerciseBiomechanicsCard(exercise: exercise),
-                  const SizedBox(height: 16),
-                  ExerciseCuesCard(exercise: exercise),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => _onActionButtonPressed(context),
-                    icon: Icon(isActive ? Icons.add_task : Icons.play_arrow),
-                    label: Text(
-                      isActive
-                          ? 'Log Set for ${exercise.name}'
-                          : 'Start Workout with this Exercise',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+              child: ExerciseDetailContent(
+                exercise: exercise,
+                isActive: isActive,
+                onAction: () =>
+                    handleDetailSheetAction(context, exercise, onSelect),
+                scrollController: scrollController,
               ),
             ),
           ],
